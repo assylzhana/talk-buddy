@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{topic.create}">Создать тему</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .question-block {
+            border: 1px solid #d8dce6;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
+            background: #fff;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .question-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .mt-16 {
+            margin-top: 16px;
+        }
+
+        .secondary-btn {
+            border: none;
+            padding: 12px 16px;
+            border-radius: 10px;
+            background: #1f2937;
+            color: white;
+            cursor: pointer;
+        }
+
+        .danger-btn {
+            border: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: #ef4444;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <h2 th:text="#{admin.panel}">Admin Panel</h2>
+
+        <div class="lang-switch">
+            <a th:href="@{?lang=en}">🇬🇧</a>
+            <a th:href="@{?lang=ru}">🇷🇺</a>
+            <a th:href="@{?lang=kk}">🇰🇿</a>
+        </div>
+
+        <a th:href="@{/admin/dashboard}" th:text="#{menu.dashboard}">Dashboard</a>
+        <a th:href="@{/admin}" class="active" th:text="#{menu.content}">Контент</a>
+        <a th:href="@{/admin/students}" th:text="#{menu.students}">Список студентов</a>
+
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="logout-btn" th:text="#{menu.logout}">Logout</button>
+        </form>
+    </aside>
+
+    <main class="content">
+        <h1 th:text="#{topic.create}">Создать тему</h1>
+
+        <form th:action="@{/admin/topics}" th:object="${topicRequest}" method="post" id="topicForm">
+            <input type="hidden" th:field="*{level}"/>
+
+            <div class="card">
+                <input th:field="*{name}" th:placeholder="#{topic.name}"/>
+                <br><br>
+                <textarea style="width: 800px;height: 200px"
+                          th:field="*{description}"
+                          th:placeholder="#{topic.description}"></textarea>
+            </div>
+
+            <div id="questionsContainer">
+                <div class="question-block" th:each="question, stat : *{questions}">
+                    <div class="question-header">
+                        <h3 th:text="#{question.title} + ' ' + (${stat.index} + 1)"></h3>
+                        <button type="button" class="danger-btn" onclick="removeQuestion(this)"
+                                th:text="#{button.delete}">
+                        </button>
+                    </div>
+
+                    <input style="width: 800px"
+                           th:name="${'questions[' + stat.index + '].questionText'}"
+                           th:value="${question.questionText}"
+                           th:placeholder="#{question.text}"/>
+
+                    <div class="question-grid mt-16">
+                        <input type="text"
+                               th:name="${'questions[' + stat.index + '].answer1'}"
+                               th:value="${question.answer1}"
+                               th:placeholder="#{answer.1}"/>
+
+                        <input type="text"
+                               th:name="${'questions[' + stat.index + '].answer2'}"
+                               th:value="${question.answer2}"
+                               th:placeholder="#{answer.2}"/>
+
+                        <input type="text"
+                               th:name="${'questions[' + stat.index + '].answer3'}"
+                               th:value="${question.answer3}"
+                               th:placeholder="#{answer.3}"/>
+
+                        <input type="text"
+                               th:name="${'questions[' + stat.index + '].answer4'}"
+                               th:value="${question.answer4}"
+                               th:placeholder="#{answer.4}"/>
+                    </div>
+
+                    <div class="mt-16">
+                        <select th:name="${'questions[' + stat.index + '].correctIndex'}">
+                            <option value="0" th:text="#{answer.correct} + ' 1'"></option>
+                            <option value="1" th:text="#{answer.correct} + ' 2'"></option>
+                            <option value="2" th:text="#{answer.correct} + ' 3'"></option>
+                            <option value="3" th:text="#{answer.correct} + ' 4'"></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-16" style="display:flex; gap:12px;">
+                <button type="button" class="secondary-btn" onclick="addQuestion()"
+                        th:text="#{button.add.question}">
+                </button>
+                <button type="submit" th:text="#{button.save.topic}"></button>
+            </div>
+        </form>
+    </main>
+</div>
+
+<script>
+    let questionIndex = document.querySelectorAll('.question-block').length;
+
+    function addQuestion() {
+        const container = document.getElementById('questionsContainer');
+
+        const block = document.createElement('div');
+        block.className = 'question-block';
+
+        block.innerHTML = `
+            <div class="question-header">
+                <h3>Вопрос ${questionIndex + 1}</h3>
+                <button type="button" class="danger-btn" onclick="removeQuestion(this)">Удалить</button>
+            </div>
+
+            <textarea name="questions[${questionIndex}].questionText" placeholder="Текст вопроса"></textarea>
+
+            <div class="question-grid mt-16">
+                <input type="text" name="questions[${questionIndex}].answer1" placeholder="Ответ 1"/>
+                <input type="text" name="questions[${questionIndex}].answer2" placeholder="Ответ 2"/>
+                <input type="text" name="questions[${questionIndex}].answer3" placeholder="Ответ 3"/>
+                <input type="text" name="questions[${questionIndex}].answer4" placeholder="Ответ 4"/>
+            </div>
+
+            <div class="mt-16">
+                <select name="questions[${questionIndex}].correctIndex">
+                    <option value="0">Правильный ответ: 1</option>
+                    <option value="1">Правильный ответ: 2</option>
+                    <option value="2">Правильный ответ: 3</option>
+                    <option value="3">Правильный ответ: 4</option>
+                </select>
+            </div>
+        `;
+
+        container.appendChild(block);
+        questionIndex++;
+    }
+
+    function removeQuestion(button) {
+        const block = button.closest('.question-block');
+        block.remove();
+        reindexQuestions();
+    }
+
+    function reindexQuestions() {
+        const blocks = document.querySelectorAll('.question-block');
+        questionIndex = 0;
+
+        blocks.forEach((block, index) => {
+            block.querySelector('h3').textContent = `Вопрос ${index + 1}`;
+
+            const textarea = block.querySelector('textarea');
+            textarea.name = `questions[${index}].questionText`;
+
+            const inputs = block.querySelectorAll('input');
+            inputs[0].name = `questions[${index}].answer1`;
+            inputs[1].name = `questions[${index}].answer2`;
+            inputs[2].name = `questions[${index}].answer3`;
+            inputs[3].name = `questions[${index}].answer4`;
+
+            const select = block.querySelector('select');
+            select.name = `questions[${index}].correctIndex`;
+
+            questionIndex++;
+        });
+    }
+</script>
+</body>
+</html>

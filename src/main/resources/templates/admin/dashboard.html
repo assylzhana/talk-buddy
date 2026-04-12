@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{admin.dashboard}">Admin Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <h2 th:text="#{admin.panel}">Admin Panel</h2>
+
+        <div class="lang-switch">
+            <a th:href="@{?lang=en}">🇬🇧</a>
+            <a th:href="@{?lang=ru}">🇷🇺</a>
+            <a th:href="@{?lang=kk}">🇰🇿</a>
+        </div>
+
+        <a th:href="@{/admin/dashboard}" th:text="#{menu.dashboard}">Dashboard</a>
+        <a th:href="@{/admin}" th:text="#{menu.content}">Контент</a>
+        <a th:href="@{/admin/students}" th:text="#{menu.students}">Список студентов</a>
+
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="logout-btn" th:text="#{menu.logout}">Logout</button>
+        </form>
+    </aside>
+
+    <main class="content">
+
+        <h1>
+            <span th:text="#{welcome}">Добро пожаловать</span>,
+            <span th:text="${username}"></span>
+        </h1>
+
+        <div class="stats-grid">
+
+            <div class="card">
+                <h3 th:text="#{level.a1}">A1</h3>
+                <p th:text="${a1Count}"></p>
+            </div>
+
+            <div class="card">
+                <h3 th:text="#{level.a2}">A2</h3>
+                <p th:text="${a2Count}"></p>
+            </div>
+
+            <div class="card">
+                <h3 th:text="#{level.b1}">B1</h3>
+                <p th:text="${b1Count}"></p>
+            </div>
+
+            <div class="card">
+                <h3 th:text="#{level.b2}">B2</h3>
+                <p th:text="${b2Count}"></p>
+            </div>
+
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

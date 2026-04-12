@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{students.title}">Students</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <h2 th:text="#{admin.panel}">Admin Panel</h2>
+
+        <div class="lang-switch">
+            <a th:href="@{?lang=en}">🇬🇧</a>
+            <a th:href="@{?lang=ru}">🇷🇺</a>
+            <a th:href="@{?lang=kk}">🇰🇿</a>
+        </div>
+
+        <a th:href="@{/admin/dashboard}" th:text="#{menu.dashboard}">Dashboard</a>
+        <a th:href="@{/admin}" th:text="#{menu.content}">Контент</a>
+        <a th:href="@{/admin/students}" class="active" th:text="#{menu.students}">Students</a>
+
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="logout-btn" th:text="#{menu.logout}">Logout</button>
+        </form>
+    </aside>
+
+    <main class="content">
+        <h1 th:text="#{students.list}">Список студентов</h1>
+
+        <form method="get" th:action="@{/admin/students}" class="search-row">
+            <input type="text"
+                   name="search"
+                   th:value="${search}"
+                   th:placeholder="#{students.search}">
+            <button type="submit" th:text="#{students.find}">Найти</button>
+        </form>
+
+        <table>
+            <thead>
+            <tr>
+                <th th:text="#{table.id}">ID</th>
+                <th th:text="#{students.username}">Username</th>
+                <th th:text="#{students.level}">Level</th>
+                <th th:text="#{students.email}">Email</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="student : ${students}">
+                <td th:text="${student.id}"></td>
+                <td th:text="${student.username}"></td>
+                <td th:text="${student.level}"></td>
+                <td th:text="${student.email}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </main>
+</div>
+</body>
+</html>

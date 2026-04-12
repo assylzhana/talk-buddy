@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{topics.title}">Topics</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <h2 th:text="#{admin.panel}">Admin Panel</h2>
+
+        <div class="lang-switch">
+            <a th:href="@{?lang=en}">🇬🇧</a>
+            <a th:href="@{?lang=ru}">🇷🇺</a>
+            <a th:href="@{?lang=kk}">🇰🇿</a>
+        </div>
+
+        <a th:href="@{/admin/dashboard}" th:text="#{menu.dashboard}">Dashboard</a>
+        <a th:href="@{/admin}" class="active" th:text="#{menu.content}">Контент</a>
+        <a th:href="@{/admin/students}" th:text="#{menu.students}">Список студентов</a>
+
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="logout-btn" th:text="#{menu.logout}">Logout</button>
+        </form>
+    </aside>
+
+    <main class="content">
+
+        <h1>
+            <span th:text="#{topics.level}">Темы уровня</span>
+            <span th:text="${level}"></span>
+        </h1>
+
+        <a th:href="@{/admin/topics/create(level=${level})}"
+           th:text="#{topics.add}">
+            ➕ Добавить тему
+        </a>
+
+        <table>
+            <tr>
+                <th th:text="#{table.id}">ID</th>
+                <th th:text="#{table.name}">Название</th>
+                <th th:text="#{table.delete}">Удалить</th>
+            </tr>
+
+            <tr th:each="t : ${topics}">
+                <td th:text="${t.id}"></td>
+                <td>
+                    <a th:href="@{/admin/topics/{id}(id=${t.id})}"
+                       th:text="${t.name}">
+                    </a>
+                </td>
+                <td>
+                    <form th:action="@{/admin/topics/{id}/delete(id=${t.id})}" method="post">
+                        <input type="hidden" name="level" th:value="${level}">
+                        <button type="submit"
+                                class="danger-btn"
+                                th:text="#{table.delete}">
+                            Удалить
+                        </button>
+                    </form>
+                </td>
+            </tr>
+
+        </table>
+
+    </main>
+</div>
+</body>
+</html>

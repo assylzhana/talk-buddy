@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{topic.edit}">Редактирование темы</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>
+        .topic-edit-card,
+        .question-edit-card,
+        .add-question-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .question-edit-card h3 {
+            margin-bottom: 12px;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .actions-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .danger-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .save-btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .correct-preview {
+            font-weight: bold;
+            color: green;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 70px;
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <h2 th:text="#{admin.panel}">Admin Panel</h2>
+
+        <div class="lang-switch">
+            <a th:href="@{?lang=en}">🇬🇧</a>
+            <a th:href="@{?lang=ru}">🇷🇺</a>
+            <a th:href="@{?lang=kk}">🇰🇿</a>
+        </div>
+
+        <a th:href="@{/admin/dashboard}" th:text="#{menu.dashboard}">Dashboard</a>
+        <a th:href="@{/admin}" class="active" th:text="#{menu.content}">Контент</a>
+        <a th:href="@{/admin/students}" th:text="#{menu.students}">Список студентов</a>
+
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="logout-btn" th:text="#{menu.logout}">Logout</button>
+        </form>
+    </aside>
+
+    <main class="content">
+
+        <div class="topic-edit-card">
+            <h1 th:text="#{topic.edit}">Редактировать тему</h1>
+
+            <form th:action="@{/admin/topics/{id}/update(id=${topic.id})}" method="post">
+                <input name="name" th:value="${topic.name}" th:placeholder="#{topic.name}">
+                <br><br>
+                <textarea style="width: 800px;height: 200px"
+                          name="description"
+                          th:text="${topic.description}"
+                          th:placeholder="#{topic.description}"></textarea>
+
+                <div class="actions-row">
+                    <button type="submit" class="save-btn" th:text="#{button.save.topic}"></button>
+                </div>
+            </form>
+        </div>
+
+        <div class="topic-edit-card">
+            <h2 th:text="#{question.list}">Вопросы</h2>
+
+            <div th:each="q : ${topic.questions}" class="question-edit-card">
+                <form th:action="@{/admin/questions/{id}/update(id=${q.id})}" method="post">
+                    <h3 th:text="#{question.edit}">Редактировать вопрос</h3>
+
+                    <input style="width: 800px" name="text" th:value="${q.text}"/>
+
+                    <div class="answers-grid">
+                        <input name="answer1"
+                               th:value="${q.answers.size() > 0 ? q.answers[0].text : ''}"
+                               th:placeholder="#{answer.1}">
+
+                        <input name="answer2"
+                               th:value="${q.answers.size() > 1 ? q.answers[1].text : ''}"
+                               th:placeholder="#{answer.2}">
+
+                        <input name="answer3"
+                               th:value="${q.answers.size() > 2 ? q.answers[2].text : ''}"
+                               th:placeholder="#{answer.3}">
+
+                        <input name="answer4"
+                               th:value="${q.answers.size() > 3 ? q.answers[3].text : ''}"
+                               th:placeholder="#{answer.4}">
+                    </div>
+
+                    <select name="correctIndex" style="margin-top: 12px;">
+                        <option value="0" th:selected="${q.answers.size() > 0 and q.answers[0].correct}" th:text="#{answer.1}"></option>
+                        <option value="1" th:selected="${q.answers.size() > 1 and q.answers[1].correct}" th:text="#{answer.2}"></option>
+                        <option value="2" th:selected="${q.answers.size() > 2 and q.answers[2].correct}" th:text="#{answer.3}"></option>
+                        <option value="3" th:selected="${q.answers.size() > 3 and q.answers[3].correct}" th:text="#{answer.4}"></option>
+                    </select>
+
+                    <div style="margin-top: 14px;">
+                        <div th:text="#{answer.current}">Текущие ответы:</div>
+                        <ul>
+                            <li th:each="a : ${q.answers}">
+                                <span th:text="${a.text}"
+                                      th:classappend="${a.correct} ? 'correct-preview' : ''"></span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="actions-row">
+                        <button type="submit" class="save-btn" th:text="#{button.save.question}"></button>
+                    </div>
+                </form>
+                <br>
+
+                <form th:action="@{/admin/questions/{id}/delete(id=${q.id})}" method="post">
+                    <button type="submit" class="danger-btn" th:text="#{button.delete.question}"></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="add-question-card">
+            <h2 th:text="#{question.add}">Добавить новый вопрос</h2>
+
+            <form th:action="@{/admin/questions}" method="post">
+                <input type="hidden" name="topicId" th:value="${topic.id}">
+
+                <input style="width: 800px" name="text" th:placeholder="#{question.text}"/>
+
+                <div class="answers-grid">
+                    <input name="answer1" th:placeholder="#{answer.1}">
+                    <input name="answer2" th:placeholder="#{answer.2}">
+                    <input name="answer3" th:placeholder="#{answer.3}">
+                    <input name="answer4" th:placeholder="#{answer.4}">
+                </div>
+
+                <select name="correctIndex" style="margin-top: 12px;">
+                    <option value="0" th:text="#{answer.1}"></option>
+                    <option value="1" th:text="#{answer.2}"></option>
+                    <option value="2" th:text="#{answer.3}"></option>
+                    <option value="3" th:text="#{answer.4}"></option>
+                </select>
+
+                <div class="actions-row">
+                    <button type="submit" class="save-btn" th:text="#{button.add.question}"></button>
+                </div>
+            </form>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>
