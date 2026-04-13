@@ -20,6 +20,6 @@ public class HomeController {
         if (isAdmin) {
             return "redirect:/admin/dashboard";
         }
-        return "redirect:/student/tests";
+        return "redirect:/student/dashboard";
     }
 }

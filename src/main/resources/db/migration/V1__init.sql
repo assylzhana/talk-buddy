@@ -1,5 +1,3 @@
-                                        ('test', '$2a$10$R7G6bDqJzi10BGSAdoo6gOKX1sC3yRyvE4s46HoPazTA/gkGEXLMa', 'ROLE_STUDENT');
-
 INSERT INTO topics (name) VALUES
                               ('English Grammar'),
                               ('Vocabulary');

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{dashboard.title}">Student Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" th:href="@{/css/student.css}">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui;
+            background: #f3f4f6;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -260px;
+            width: 260px;
+            height: 100%;
+            background: #0f172a;
+            color: white;
+            padding: 20px;
+            transition: 0.3s;
+            z-index: 2000;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar a {
+            display: block;
+            color: #cbd5f5;
+            margin-bottom: 15px;
+            text-decoration: none;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+            z-index: 1500;
+        }
+
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 60px;
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 3000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .burger {
+            font-size: 28px;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
+        .content {
+            padding: 90px 20px 40px;
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        .record-controls {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+            margin-bottom: 14px;
+        }
+
+        .record-btn {
+            flex: 1;
+            padding: 14px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .record-btn.stop {
+            background: #4338ca;
+        }
+
+        .speaking-card audio {
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .section-title {
+            margin: 28px 0 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar" id="sidebar">
+    <h2 th:text="#{menu.title}">Menu</h2>
+
+    <div class="lang-switch">
+        <a th:href="@{?lang=en}">🇬🇧</a>
+        <a th:href="@{?lang=ru}">🇷🇺</a>
+        <a th:href="@{?lang=kk}">🇰🇿</a>
+    </div>
+
+    <a href="/student/dashboard" th:text="#{menu.dashboard}">Dashboard</a>
+    <a href="/student/account" th:text="#{menu.account}">Account</a>
+
+    <form th:action="@{/logout}" method="post">
+        <button type="submit" class="submit-btn" th:text="#{menu.logout}">Logout</button>
+    </form>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<div class="header">
+    <div class="burger" onclick="toggleSidebar()">☰</div>
+    <h3 th:text="#{dashboard.title}">Dashboard</h3>
+</div>
+
+<div class="content">
+
+    <div th:if="${user.level == null}">
+
+        <div class="card">
+            <h2 th:text="#{assessment.title}">English Level Assessment</h2>
+            <p th:text="#{assessment.desc}">Complete all parts</p>
+        </div>
+
+        <form th:action="@{/student/assessment/submit}" method="post">
+
+            <h3 class="section-title" th:text="#{assessment.part1}">Part 1</h3>
+
+            <div th:each="q, i : ${assessment.mcq}" class="card">
+                <h4 th:text="${q.question}"></h4>
+
+                <input type="hidden"
+                       th:name="${'multipleChoiceAnswers[' + i.index + '].questionId'}"
+                       th:value="${q.id}"/>
+
+                <div th:each="opt : ${q.options}">
+                    <label>
+                        <input type="radio"
+                               th:name="${'multipleChoiceAnswers[' + i.index + '].selectedOption'}"
+                               th:value="${opt}"
+                               required />
+                        <span th:text="${opt}"></span>
+                    </label>
+                </div>
+            </div>
+
+            <h3 class="section-title" th:text="#{assessment.part2}">Part 2</h3>
+
+            <div th:each="q, i : ${assessment.open}" class="card">
+                <h4 th:text="${q.question}"></h4>
+
+                <input type="hidden"
+                       th:name="${'openAnswers[' + i.index + '].questionId'}"
+                       th:value="${q.id}"/>
+
+                <textarea th:name="${'openAnswers[' + i.index + '].answer'}"
+                          th:placeholder="#{assessment.write}"
+                          required></textarea>
+            </div>
+
+            <h3 class="section-title" th:text="#{assessment.part3}">Part 3</h3>
+
+            <div th:each="q, i : ${assessment.speaking}" class="card speaking-card">
+                <h4 th:text="${q.question}"></h4>
+
+                <input type="hidden"
+                       th:name="${'speakingAnswers[' + i.index + '].questionId'}"
+                       th:value="${q.id}" />
+
+                <input type="hidden"
+                       th:name="${'speakingAnswers[' + i.index + '].audioBase64'}" />
+
+                <div class="record-controls">
+                    <button type="button" class="record-btn" onclick="startRecording(this)" th:text="#{record.start}">Start</button>
+                    <button type="button" class="record-btn stop" onclick="stopRecording(this)" th:text="#{record.stop}">Stop</button>
+                </div>
+
+                <audio controls></audio>
+            </div>
+
+            <button type="submit" class="submit-btn" th:text="#{button.submit}">Submit</button>
+        </form>
+
+        <div th:if="${result != null}" class="card">
+            <h3 th:text="#{result.level}">Your Level</h3>
+            <span th:text="${result.level}"></span>
+            <p th:text="${result.feedback}"></p>
+        </div>
+    </div>
+
+    <div th:if="${user.level != null}">
+        <div class="card">
+            <h2 th:text="#{result.level}">Your Level</h2>
+            <span th:text="${user.level}"></span>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById("sidebar").classList.toggle("active");
+        document.getElementById("overlay").classList.toggle("active");
+    }
+</script>
+
+</body>
+</html>

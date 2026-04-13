@@ -3,9 +3,9 @@ spring:
     basename: messages
     encoding: UTF-8
   datasource:
-    url: jdbc:postgresql://localhost:5432/talk-buddy
-    username: postgres
-    password: postgres
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: update
@@ -22,3 +22,7 @@ spring:
 
 server:
   port: 8080
+openai:
+  api-key: ${API}
+  responses-url: https://api.openai.com/v1/responses
+  speech-url: https://api.openai.com/v1/audio/speech
