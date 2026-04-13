@@ -26,6 +26,7 @@ public class Topic {
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
     private Level level;
 
     @OneToMany(mappedBy = "topic", cascade = CascadeType.ALL, orphanRemoval = true)
