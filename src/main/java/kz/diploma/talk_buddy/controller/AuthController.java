@@ -22,7 +22,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public String register(@RequestParam String fistName,
+    public String register(@RequestParam String firstName,
                            @RequestParam String lastName,
                            @RequestParam String username,
                            @RequestParam String password,
@@ -35,7 +35,7 @@ public class AuthController {
         }
 
         User user = new User();
-        user.setFirstName(fistName);
+        user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setUsername(username);
         user.setPassword(password);

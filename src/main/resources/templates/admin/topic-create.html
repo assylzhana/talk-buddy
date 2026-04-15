@@ -26,9 +26,7 @@
             gap: 12px;
         }
 
-        .mt-16 {
-            margin-top: 16px;
-        }
+        .mt-16 { margin-top: 16px; }
 
         .secondary-btn {
             border: none;
@@ -47,6 +45,8 @@
             color: white;
             cursor: pointer;
         }
+
+        .extra { margin-top: 12px; }
     </style>
 </head>
 <body>
@@ -72,22 +72,37 @@
     <main class="content">
         <h1 th:text="#{topic.create}">Создать тему</h1>
 
-        <form th:action="@{/admin/topics}" th:object="${topicRequest}" method="post" id="topicForm">
+        <form th:action="@{/admin/topics}" th:object="${topicRequest}" method="post">
+
             <input type="hidden" th:field="*{level}"/>
 
             <div class="card">
-                <input th:field="*{name}" th:placeholder="#{topic.name}"/>
+                <input style="width: 400px" th:field="*{name}" th:placeholder="#{topic.name}"/>
                 <br><br>
+
                 <textarea style="width: 800px;height: 200px"
                           th:field="*{description}"
                           th:placeholder="#{topic.description}"></textarea>
+
+                <br><br>
+
+                <div style="width: 800px" id="videosContainer"></div>
+                <br>
+                <button type="button" onclick="addVideo()">video +</button>
+
+                <br><br>
+
+                <div style="width: 800px" id="photosContainer"></div>
+                <br>
+                <button type="button" onclick="addPhoto()">photo +</button>
             </div>
 
             <div id="questionsContainer">
                 <div class="question-block" th:each="question, stat : *{questions}">
                     <div class="question-header">
                         <h3 th:text="#{question.title} + ' ' + (${stat.index} + 1)"></h3>
-                        <button type="button" class="danger-btn" onclick="removeQuestion(this)"
+                        <button type="button" class="danger-btn"
+                                onclick="removeQuestion(this)"
                                 th:text="#{button.delete}">
                         </button>
                     </div>
@@ -97,49 +112,44 @@
                            th:value="${question.questionText}"
                            th:placeholder="#{question.text}"/>
 
-                    <div class="question-grid mt-16">
-                        <input type="text"
-                               th:name="${'questions[' + stat.index + '].answer1'}"
-                               th:value="${question.answer1}"
-                               th:placeholder="#{answer.1}"/>
-
-                        <input type="text"
-                               th:name="${'questions[' + stat.index + '].answer2'}"
-                               th:value="${question.answer2}"
-                               th:placeholder="#{answer.2}"/>
-
-                        <input type="text"
-                               th:name="${'questions[' + stat.index + '].answer3'}"
-                               th:value="${question.answer3}"
-                               th:placeholder="#{answer.3}"/>
-
-                        <input type="text"
-                               th:name="${'questions[' + stat.index + '].answer4'}"
-                               th:value="${question.answer4}"
-                               th:placeholder="#{answer.4}"/>
-                    </div>
-
+                    <!-- TYPE -->
                     <div class="mt-16">
-                        <select th:name="${'questions[' + stat.index + '].correctIndex'}">
-                            <option value="0" th:text="#{answer.correct} + ' 1'"></option>
-                            <option value="1" th:text="#{answer.correct} + ' 2'"></option>
-                            <option value="2" th:text="#{answer.correct} + ' 3'"></option>
-                            <option value="3" th:text="#{answer.correct} + ' 4'"></option>
+                        <select th:name="${'questions[' + stat.index + '].type'}"
+                                th:onchange="'changeType(this, ' + ${stat.index} + ')'">
+                            <option value="TEST">TEST</option>
+                            <option value="FILL_GAP">FILL GAP</option>
+                            <option value="MATCHING">MATCHING</option>
                         </select>
                     </div>
+
+                    <div class="question-grid mt-16 answers">
+                        <input th:name="${'questions[' + stat.index + '].answer1'}"/>
+                        <input th:name="${'questions[' + stat.index + '].answer2'}"/>
+                        <input th:name="${'questions[' + stat.index + '].answer3'}"/>
+                        <input th:name="${'questions[' + stat.index + '].answer4'}"/>
+                    </div>
+
+                    <div class="mt-16 answers">
+                        <select th:name="${'questions[' + stat.index + '].correctIndex'}">
+                            <option value="0">1</option>
+                            <option value="1">2</option>
+                            <option value="2">3</option>
+                            <option value="3">4</option>
+                        </select>
+                    </div>
+
+                    <div class="extra"></div>
                 </div>
             </div>
 
             <div class="mt-16" style="display:flex; gap:12px;">
-                <button type="button" class="secondary-btn" onclick="addQuestion()"
-                        th:text="#{button.add.question}">
-                </button>
+                <button type="button" class="secondary-btn" onclick="addQuestion()">+</button>
                 <button type="submit" th:text="#{button.save.topic}"></button>
             </div>
+
         </form>
     </main>
 </div>
-
 <script>
     let questionIndex = document.querySelectorAll('.question-block').length;
 
@@ -150,62 +160,156 @@
         block.className = 'question-block';
 
         block.innerHTML = `
-            <div class="question-header">
-                <h3>Вопрос ${questionIndex + 1}</h3>
-                <button type="button" class="danger-btn" onclick="removeQuestion(this)">Удалить</button>
-            </div>
+        <div class="question-header">
+            <h3 th:text="#{question.title} + ' ' + ${questionIndex + 1}">${questionIndex + 1}</h3>
+            <button type="button" class="danger-btn" onclick="removeQuestion(this)" th:text="#{button.delete}">-</button>
+        </div>
 
-            <textarea name="questions[${questionIndex}].questionText" placeholder="Текст вопроса"></textarea>
+        <input style="width: 800px" name="questions[${questionIndex}].questionText" placeholder="Question text">
+        <br><br>
+        <select name="questions[${questionIndex}].type"
+                onchange="changeType(this, ${questionIndex})">
+            <option value="TEST">TEST</option>
+            <option value="FILL_GAP">FILL_GAP</option>
+            <option value="MATCHING">MATCHING</option>
+        </select>
 
-            <div class="question-grid mt-16">
-                <input type="text" name="questions[${questionIndex}].answer1" placeholder="Ответ 1"/>
-                <input type="text" name="questions[${questionIndex}].answer2" placeholder="Ответ 2"/>
-                <input type="text" name="questions[${questionIndex}].answer3" placeholder="Ответ 3"/>
-                <input type="text" name="questions[${questionIndex}].answer4" placeholder="Ответ 4"/>
-            </div>
+        <div class="question-grid mt-16 answers">
+            <input name="questions[${questionIndex}].answer1" placeholder="Answer 1"/>
+            <input name="questions[${questionIndex}].answer2" placeholder="Answer 2"/>
+            <input name="questions[${questionIndex}].answer3" placeholder="Answer 3"/>
+            <input name="questions[${questionIndex}].answer4" placeholder="Answer 4"/>
+        </div>
 
-            <div class="mt-16">
-                <select name="questions[${questionIndex}].correctIndex">
-                    <option value="0">Правильный ответ: 1</option>
-                    <option value="1">Правильный ответ: 2</option>
-                    <option value="2">Правильный ответ: 3</option>
-                    <option value="3">Правильный ответ: 4</option>
-                </select>
-            </div>
-        `;
+        <div class="mt-16 answers">
+            <select name="questions[${questionIndex}].correctIndex">
+                <option value="0">1</option>
+                <option value="1">2</option>
+                <option value="2">3</option>
+                <option value="3">4</option>
+            </select>
+        </div>
+
+        <div class="extra"></div>
+    `;
 
         container.appendChild(block);
         questionIndex++;
     }
 
-    function removeQuestion(button) {
-        const block = button.closest('.question-block');
-        block.remove();
+    function changeType(select, index) {
+        const block = select.closest('.question-block');
+        const extra = block.querySelector('.extra');
+        const answers = block.querySelectorAll('.answers');
+
+        extra.innerHTML = "";
+
+        if (select.value === 'TEST') {
+            answers.forEach(a => a.style.display = 'grid');
+        }
+
+        if (select.value === 'FILL_GAP') {
+            answers.forEach(a => a.style.display = 'none');
+
+            extra.innerHTML = `
+                <input name="questions[${index}].correctAnswer" placeholder="Correct answer">
+            `;
+        }
+
+        if (select.value === 'MATCHING') {
+            answers.forEach(a => a.style.display = 'none');
+
+            extra.innerHTML = `
+                <div class="matching-container">
+                    <div id="pairs-${index}"></div>
+
+                    <button type="button"
+                            onclick="addPair(${index})"
+                            class="secondary-btn mt-16">
+                        +
+                    </button>
+                </div>
+            `;
+
+            addPair(index);
+        }
+    }
+
+    function addPair(qIndex) {
+        const container = document.getElementById(`pairs-${qIndex}`);
+
+        const pairIndex = container.children.length;
+
+        const div = document.createElement('div');
+        div.className = 'question-grid mt-16';
+
+        div.innerHTML = `
+            <input name="questions[${qIndex}].leftItems[${pairIndex}]" placeholder="Left">
+            <input name="questions[${qIndex}].rightItems[${pairIndex}]" placeholder="Right">
+
+            <button type="button"
+                    class="danger-btn"
+                    onclick="this.parentElement.remove()">
+                X
+            </button>
+        `;
+
+        container.appendChild(div);
+    }
+
+    function removeQuestion(btn) {
+        btn.closest('.question-block').remove();
         reindexQuestions();
     }
-
     function reindexQuestions() {
         const blocks = document.querySelectorAll('.question-block');
-        questionIndex = 0;
+        blocks.forEach((block, qIndex) => {
+            block.querySelector('h3').textContent = `Вопрос ${qIndex + 1}`;
+            const elements = block.querySelectorAll('input, select');
 
-        blocks.forEach((block, index) => {
-            block.querySelector('h3').textContent = `Вопрос ${index + 1}`;
+            elements.forEach(el => {
+                if (el.name) {
+                    el.name = el.name.replace(/questions\[\d+]/, `questions[${qIndex}]`);
+                }
+            });
 
-            const textarea = block.querySelector('textarea');
-            textarea.name = `questions[${index}].questionText`;
+            const pairs = block.querySelectorAll('.matching-container input');
 
-            const inputs = block.querySelectorAll('input');
-            inputs[0].name = `questions[${index}].answer1`;
-            inputs[1].name = `questions[${index}].answer2`;
-            inputs[2].name = `questions[${index}].answer3`;
-            inputs[3].name = `questions[${index}].answer4`;
+            pairs.forEach((input, pIndex) => {
+                if (input.name.includes('leftItems')) {
+                    input.name = `questions[${qIndex}].leftItems[${pIndex}]`;
+                }
+                if (input.name.includes('rightItems')) {
+                    input.name = `questions[${qIndex}].rightItems[${pIndex}]`;
+                }
+            });
 
-            const select = block.querySelector('select');
-            select.name = `questions[${index}].correctIndex`;
-
-            questionIndex++;
         });
+
+        questionIndex = blocks.length;
     }
+
+    let videoIndex = 0;
+    let photoIndex = 0;
+
+    function addVideo() {
+        const input = document.createElement('input');
+        input.name = `videoUrls[${videoIndex}]`;
+        document.getElementById('videosContainer').appendChild(input);
+        videoIndex++;
+    }
+
+    function addPhoto() {
+        const input = document.createElement('input');
+        input.name = `photoUrls[${photoIndex}]`;
+        document.getElementById('photosContainer').appendChild(input);
+        photoIndex++;
+    }
+
+    window.onload = () => {
+        addVideo();
+        addPhoto();
+    };
 </script>
 </body>
 </html>

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title th:text="#{topic.edit}">Редактирование темы</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <style>
         .topic-edit-card,
         .question-edit-card,
@@ -58,6 +60,18 @@
             width: 100%;
             min-height: 70px;
         }
+
+        .type-block {
+            margin-top: 12px;
+        }
+
+        .matching-pair-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 12px;
+            margin-top: 12px;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -96,6 +110,9 @@
                 <div class="actions-row">
                     <button type="submit" class="save-btn" th:text="#{button.save.topic}"></button>
                 </div>
+                <button type="button" class="save-btn" onclick="openGeneratorModal()"
+                        th:text="#{ai.generateQuestions}">
+                </button>
             </form>
         </div>
 
@@ -108,39 +125,83 @@
 
                     <input style="width: 800px" name="text" th:value="${q.text}"/>
 
-                    <div class="answers-grid">
-                        <input name="answer1"
-                               th:value="${q.answers.size() > 0 ? q.answers[0].text : ''}"
-                               th:placeholder="#{answer.1}">
-
-                        <input name="answer2"
-                               th:value="${q.answers.size() > 1 ? q.answers[1].text : ''}"
-                               th:placeholder="#{answer.2}">
-
-                        <input name="answer3"
-                               th:value="${q.answers.size() > 2 ? q.answers[2].text : ''}"
-                               th:placeholder="#{answer.3}">
-
-                        <input name="answer4"
-                               th:value="${q.answers.size() > 3 ? q.answers[3].text : ''}"
-                               th:placeholder="#{answer.4}">
+                    <div class="type-block">
+                        <select name="type" onchange="toggleEditQuestionType(this)">
+                            <option value="TEST" th:selected="${q.type != null and q.type.name() == 'TEST'}">TEST</option>
+                            <option value="FILL_GAP" th:selected="${q.type != null and q.type.name() == 'FILL_GAP'}">FILL_GAP</option>
+                            <option value="MATCHING" th:selected="${q.type != null and q.type.name() == 'MATCHING'}">MATCHING</option>
+                        </select>
                     </div>
 
-                    <select name="correctIndex" style="margin-top: 12px;">
-                        <option value="0" th:selected="${q.answers.size() > 0 and q.answers[0].correct}" th:text="#{answer.1}"></option>
-                        <option value="1" th:selected="${q.answers.size() > 1 and q.answers[1].correct}" th:text="#{answer.2}"></option>
-                        <option value="2" th:selected="${q.answers.size() > 2 and q.answers[2].correct}" th:text="#{answer.3}"></option>
-                        <option value="3" th:selected="${q.answers.size() > 3 and q.answers[3].correct}" th:text="#{answer.4}"></option>
-                    </select>
+                    <div class="test-section"
+                         th:style="${q.type == null or q.type.name() != 'TEST'} ? 'display:none;' : ''">     <div class="answers-grid">
+                            <input name="answer1"
+                                   th:value="${q.answers.size() > 0 ? q.answers[0].text : ''}"
+                                   th:placeholder="#{answer.1}">
 
-                    <div style="margin-top: 14px;">
-                        <div th:text="#{answer.current}">Текущие ответы:</div>
-                        <ul>
-                            <li th:each="a : ${q.answers}">
-                                <span th:text="${a.text}"
-                                      th:classappend="${a.correct} ? 'correct-preview' : ''"></span>
-                            </li>
-                        </ul>
+                            <input name="answer2"
+                                   th:value="${q.answers.size() > 1 ? q.answers[1].text : ''}"
+                                   th:placeholder="#{answer.2}">
+
+                            <input name="answer3"
+                                   th:value="${q.answers.size() > 2 ? q.answers[2].text : ''}"
+                                   th:placeholder="#{answer.3}">
+
+                            <input name="answer4"
+                                   th:value="${q.answers.size() > 3 ? q.answers[3].text : ''}"
+                                   th:placeholder="#{answer.4}">
+                        </div>
+
+                        <select name="correctIndex" style="margin-top: 12px;">
+                            <option value="0" th:selected="${q.answers.size() > 0 and q.answers[0].correct}" th:text="#{answer.1}"></option>
+                            <option value="1" th:selected="${q.answers.size() > 1 and q.answers[1].correct}" th:text="#{answer.2}"></option>
+                            <option value="2" th:selected="${q.answers.size() > 2 and q.answers[2].correct}" th:text="#{answer.3}"></option>
+                            <option value="3" th:selected="${q.answers.size() > 3 and q.answers[3].correct}" th:text="#{answer.4}"></option>
+                        </select>
+
+                        <div style="margin-top: 14px;">
+                            <div th:text="#{answer.current}">Текущие ответы:</div>
+                            <ul>
+                                <li th:each="a : ${q.answers}">
+                                    <span th:text="${a.text}"
+                                          th:classappend="${a.correct} ? 'correct-preview' : ''"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="fill-gap-section"
+                         th:style="${q.type == null or q.type.name() != 'FILL_GAP'} ? 'display:none;' : ''">
+                        <input name="correctAnswer"
+                               th:value="${q.correctAnswer}"
+                               placeholder="Correct answer"
+                               style="width: 800px; margin-top: 12px;">
+                    </div>
+
+                    <div class="matching-section"
+                         th:style="${q.type == null or q.type.name() != 'MATCHING'} ? 'display:none;' : ''">
+
+                        <div class="matching-pairs">
+                            <div th:each="pair, stat : ${q.pairs}" class="matching-pair-row">
+                                <input th:value="${pair.leftText}"
+                                       placeholder="Left">
+
+                                <input th:value="${pair.rightText}"
+                                       placeholder="Right">
+
+                                <button type="button"
+                                        class="danger-btn"
+                                        onclick="removeMatchingPair(this)">X</button>
+                            </div>
+                        </div>
+
+                        <div class="actions-row">
+                            <button type="button"
+                                    class="save-btn"
+                                    onclick="addEditMatchingPair(this)">
+                                +
+                            </button>
+                        </div>
                     </div>
 
                     <div class="actions-row">
@@ -163,27 +224,261 @@
 
                 <input style="width: 800px" name="text" th:placeholder="#{question.text}"/>
 
-                <div class="answers-grid">
-                    <input name="answer1" th:placeholder="#{answer.1}">
-                    <input name="answer2" th:placeholder="#{answer.2}">
-                    <input name="answer3" th:placeholder="#{answer.3}">
-                    <input name="answer4" th:placeholder="#{answer.4}">
+                <div class="type-block">
+                    <select name="type" onchange="toggleCreateQuestionType(this)">
+                        <option value="TEST">TEST</option>
+                        <option value="FILL_GAP">FILL_GAP</option>
+                        <option value="MATCHING">MATCHING</option>
+                    </select>
                 </div>
 
-                <select name="correctIndex" style="margin-top: 12px;">
-                    <option value="0" th:text="#{answer.1}"></option>
-                    <option value="1" th:text="#{answer.2}"></option>
-                    <option value="2" th:text="#{answer.3}"></option>
-                    <option value="3" th:text="#{answer.4}"></option>
-                </select>
+                <div class="create-test-section">
+                    <div class="answers-grid">
+                        <input name="answer1" th:placeholder="#{answer.1}">
+                        <input name="answer2" th:placeholder="#{answer.2}">
+                        <input name="answer3" th:placeholder="#{answer.3}">
+                        <input name="answer4" th:placeholder="#{answer.4}">
+                    </div>
+
+                    <select name="correctIndex" style="margin-top: 12px;">
+                        <option value="0" th:text="#{answer.1}"></option>
+                        <option value="1" th:text="#{answer.2}"></option>
+                        <option value="2" th:text="#{answer.3}"></option>
+                        <option value="3" th:text="#{answer.4}"></option>
+                    </select>
+                </div>
+
+                <div class="create-fill-gap-section" style="display:none;">
+                    <input name="correctAnswer"
+                           placeholder="Correct answer"
+                           style="width: 800px; margin-top: 12px;">
+                </div>
+
+                <div class="create-matching-section" style="display:none;">
+                    <div class="create-matching-pairs"></div>
+
+                    <div class="actions-row">
+                        <button type="button"
+                                class="save-btn"
+                                onclick="addCreateMatchingPair(this)">
+                            +
+                        </button>
+                    </div>
+                </div>
 
                 <div class="actions-row">
                     <button type="submit" class="save-btn" th:text="#{button.add.question}"></button>
                 </div>
             </form>
+
         </div>
 
+        <div class="topic-edit-card">
+            <h2 th:text="#{photo.list}">Фото</h2>
+
+            <div th:each="p : ${topic.photos}" style="margin-bottom: 15px;">
+                <input th:value="${p.url}" style="width: 400px"/>
+                <form th:action="@{/admin/photos/{id}/delete(id=${p.id})}" method="post">
+                    <button type="submit" class="danger-btn" th:text="#{button.delete}">Удалить</button>
+                </form>
+            </div>
+
+            <form th:action="@{/admin/photos}" method="post">
+                <input type="hidden" name="topicId" th:value="${topic.id}">
+                <input style="width: 400px" name="url" placeholder="Photo URL">
+                <button type="submit" class="save-btn" th:text="#{button.add.photo}">Добавить фото</button>
+            </form>
+        </div>
+        <div class="topic-edit-card">
+            <h2 th:text="#{video.list}">Видео</h2>
+
+            <div th:each="v : ${topic.videos}" style="margin-bottom: 15px;">
+
+                <input th:value="${v.url}" style="width: 400px"/>
+
+                <form th:action="@{/admin/videos/{id}/delete(id=${v.id})}" method="post">
+                    <button type="submit" class="danger-btn" th:text="#{button.delete}">Удалить</button>
+                </form>
+            </div>
+
+            <form th:action="@{/admin/videos}" method="post">
+                <input type="hidden" name="topicId" th:value="${topic.id}">
+                <input style="width: 400px" name="url" placeholder="YouTube URL">
+                <button type="submit" class="save-btn" th:text="#{button.add.video}">Добавить видео</button>
+            </form>
+        </div>
     </main>
+</div>
+
+<script>
+    function toggleEditQuestionType(select) {
+        const form = select.closest('form');
+        const testSection = form.querySelector('.test-section');
+        const fillGapSection = form.querySelector('.fill-gap-section');
+        const matchingSection = form.querySelector('.matching-section');
+
+        testSection.style.display = 'none';
+        fillGapSection.style.display = 'none';
+        matchingSection.style.display = 'none';
+
+        if (select.value === 'TEST') {
+            testSection.style.display = 'block';
+        }
+
+        if (select.value === 'FILL_GAP') {
+            fillGapSection.style.display = 'block';
+        }
+
+        if (select.value === 'MATCHING') {
+            matchingSection.style.display = 'block';
+
+            const pairsContainer = matchingSection.querySelector('.matching-pairs');
+            if (pairsContainer.children.length === 0) {
+                addEditMatchingPair(matchingSection.querySelector('.save-btn'));
+            }
+        }
+    }
+
+    function addEditMatchingPair(button) {
+        const matchingSection = button.closest('.matching-section');
+        const pairsContainer = matchingSection.querySelector('.matching-pairs');
+        const index = pairsContainer.querySelectorAll('.matching-pair-row').length;
+
+        const row = document.createElement('div');
+        row.className = 'matching-pair-row';
+
+        row.innerHTML = `
+            <input name="leftItems" placeholder="Left">
+            <input name="rightItems" placeholder="Right">
+            <button type="button" class="danger-btn" onclick="removeMatchingPair(this)">X</button>
+        `;
+
+        pairsContainer.appendChild(row);
+    }
+
+    function toggleCreateQuestionType(select) {
+        const form = select.closest('form');
+        const testSection = form.querySelector('.create-test-section');
+        const fillGapSection = form.querySelector('.create-fill-gap-section');
+        const matchingSection = form.querySelector('.create-matching-section');
+
+        testSection.style.display = 'none';
+        fillGapSection.style.display = 'none';
+        matchingSection.style.display = 'none';
+
+        if (select.value === 'TEST') {
+            testSection.style.display = 'block';
+        }
+
+        if (select.value === 'FILL_GAP') {
+            fillGapSection.style.display = 'block';
+        }
+
+        if (select.value === 'MATCHING') {
+            matchingSection.style.display = 'block';
+
+            const pairsContainer = matchingSection.querySelector('.create-matching-pairs');
+            if (pairsContainer.children.length === 0) {
+                addCreateMatchingPair(matchingSection.querySelector('.save-btn'));
+            }
+        }
+    }
+
+    function addCreateMatchingPair(button) {
+        const matchingSection = button.closest('.create-matching-section');
+        const pairsContainer = matchingSection.querySelector('.create-matching-pairs');
+        const index = pairsContainer.querySelectorAll('.matching-pair-row').length;
+
+        const row = document.createElement('div');
+        row.className = 'matching-pair-row';
+
+        row.innerHTML = `
+            <input name="leftItems" placeholder="Left">
+            <input name="rightItems" placeholder="Right">
+            <button type="button" class="danger-btn" onclick="removeMatchingPair(this)">X</button>
+        `;
+
+        pairsContainer.appendChild(row);
+    }
+
+    function removeMatchingPair(button) {
+        const row = button.closest('.matching-pair-row');
+        const container = row.parentElement;
+        row.remove();
+        reindexMatchingPairs(container);
+    }
+
+    function reindexMatchingPairs(container) {
+        const rows = container.querySelectorAll('.matching-pair-row');
+
+        rows.forEach((row, index) => {
+            const inputs = row.querySelectorAll('input');
+            if (inputs.length >= 2) {
+                inputs[0].name = `leftItems[${index}]`;
+                inputs[1].name = `rightItems[${index}]`;
+            }
+        });
+    }
+    function openGeneratorModal() {
+        document.getElementById('aiModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('aiModal').style.display = 'none';
+    }
+
+    function generateQuestions() {
+        const count = document.getElementById('questionCount').value;
+
+        const topicName = document.querySelector('input[name="name"]').value;
+        const description = document.querySelector('textarea[name="description"]').value;
+        const topicId = document.querySelector('input[name="topicId"]').value;
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
+
+        console.log(topicName, description, topicId);
+
+        fetch('/admin/generate-questions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [csrfHeader]: csrfToken
+            },
+            body: JSON.stringify({
+                count: count,
+                topic: topicName,
+                description: description,
+                topicId: topicId
+            })
+        })
+            .then(res => res.text())
+            .then(text => {
+                console.log("SERVER:", text);
+                location.reload();
+            })
+            .catch(err => {
+                console.error("ERROR:", err);
+            });
+    }
+</script>
+<div id="aiModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5);">
+
+    <div style="background:white; padding:20px; border-radius:12px; width:400px; margin:100px auto;">
+        <h3 th:text="#{ai.modal.title}"></h3>
+
+        <input id="questionCount" type="number"
+               th:placeholder="#{ai.input.placeholder}"
+               style="width:100%; margin-top:10px;">
+
+        <div style="margin-top:20px; display:flex; gap:10px;">
+            <button onclick="generateQuestions()" class="save-btn"
+                    th:text="#{ai.button.generate}"></button>
+
+            <button onclick="closeModal()" class="danger-btn"
+                    th:text="#{ai.button.cancel}"></button>
+        </div>
+    </div>
 </div>
 </body>
 </html>

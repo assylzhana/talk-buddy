@@ -2,13 +2,20 @@ package kz.diploma.talk_buddy.controller;
 
 import kz.diploma.talk_buddy.dto.CreateQuestionRequest;
 import kz.diploma.talk_buddy.dto.CreateTopicRequest;
+import kz.diploma.talk_buddy.dto.GenerateRequest;
 import kz.diploma.talk_buddy.entity.*;
+import kz.diploma.talk_buddy.repository.PhotoRepository;
+import kz.diploma.talk_buddy.repository.QuestionRepository;
+import kz.diploma.talk_buddy.repository.VideoRepository;
 import kz.diploma.talk_buddy.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
@@ -18,7 +25,11 @@ public class AdminController {
     private final TopicService topicService;
     private final QuestionService questionService;
     private final UserService userService;
-    private final AnswerService answerService;
+    private final AiAssessmentService aiService;
+    private final VideoRepository videoRepository;
+    private final PhotoRepository photoRepository;
+    private final QuestionRepository questionRepository;
+
 
     @GetMapping
     public String contentPage(Model model) {
@@ -77,6 +88,7 @@ public class AdminController {
     @PostMapping("/topics")
     public String createTopic(@ModelAttribute CreateTopicRequest topicRequest) {
         topicService.createTopicWithQuestions(topicRequest);
+        System.out.println("NAME = " + topicRequest.getName());
         return "redirect:/admin/level/" + topicRequest.getLevel();
     }
 
@@ -101,72 +113,124 @@ public class AdminController {
     @PostMapping("/questions")
     public String addQuestion(@RequestParam Long topicId,
                               @RequestParam String text,
-                              @RequestParam String answer1,
-                              @RequestParam String answer2,
-                              @RequestParam String answer3,
-                              @RequestParam String answer4,
-                              @RequestParam int correctIndex) {
+                              @RequestParam String type,
+                              @RequestParam(required = false) String answer1,
+                              @RequestParam(required = false) String answer2,
+                              @RequestParam(required = false) String answer3,
+                              @RequestParam(required = false) String answer4,
+                              @RequestParam(required = false) Integer correctIndex,
+                              @RequestParam(required = false) String correctAnswer,
+                              @RequestParam(required = false) List<String> leftItems,
+                              @RequestParam(required = false) List<String> rightItems) {
 
         Topic topic = topicService.findById(topicId);
 
         Question q = new Question();
         q.setText(text);
         q.setTopic(topic);
+        q.setType(QuestionType.valueOf(type));
+        q.setCorrectAnswer(null);
 
-        Answer a1 = new Answer();
-        a1.setText(answer1);
-        a1.setCorrect(correctIndex == 0);
-        a1.setQuestion(q);
+        if (q.getType() == QuestionType.TEST) {
+            addAnswerIfNotBlank(q, answer1, correctIndex, 0);
+            addAnswerIfNotBlank(q, answer2, correctIndex, 1);
+            addAnswerIfNotBlank(q, answer3, correctIndex, 2);
+            addAnswerIfNotBlank(q, answer4, correctIndex, 3);
+        }
 
-        Answer a2 = new Answer();
-        a2.setText(answer2);
-        a2.setCorrect(correctIndex == 1);
-        a2.setQuestion(q);
+        if (q.getType() == QuestionType.FILL_GAP) {
+            q.setCorrectAnswer(correctAnswer);
+        }
 
-        Answer a3 = new Answer();
-        a3.setText(answer3);
-        a3.setCorrect(correctIndex == 2);
-        a3.setQuestion(q);
+        if (q.getType() == QuestionType.MATCHING && leftItems != null && rightItems != null) {
+            int size = Math.min(leftItems.size(), rightItems.size());
 
-        Answer a4 = new Answer();
-        a4.setText(answer4);
-        a4.setCorrect(correctIndex == 3);
-        a4.setQuestion(q);
+            for (int i = 0; i < size; i++) {
+                String left = leftItems.get(i);
+                String right = rightItems.get(i);
 
-        q.getAnswers().add(a1);
-        q.getAnswers().add(a2);
-        q.getAnswers().add(a3);
-        q.getAnswers().add(a4);
+                if (left == null || left.isBlank() || right == null || right.isBlank()) {
+                    continue;
+                }
+
+                MatchingPair pair = new MatchingPair();
+                pair.setLeftText(left);
+                pair.setRightText(right);
+                pair.setQuestion(q);
+
+                q.getPairs().add(pair);
+            }
+        }
 
         questionService.save(q);
 
         return "redirect:/admin/topics/" + topicId;
     }
 
+    private void addAnswerIfNotBlank(Question q, String text, Integer correctIndex, int index) {
+        if (text == null || text.isBlank()) {
+            return;
+        }
+
+        Answer a = new Answer();
+        a.setText(text);
+        a.setCorrect(correctIndex != null && correctIndex == index);
+        a.setQuestion(q);
+
+        q.getAnswers().add(a);
+    }
+
     @PostMapping("/questions/{id}/update")
     public String updateQuestion(@PathVariable Long id,
                                  @RequestParam String text,
-                                 @RequestParam String answer1,
-                                 @RequestParam String answer2,
-                                 @RequestParam String answer3,
-                                 @RequestParam String answer4,
-                                 @RequestParam int correctIndex) {
+                                 @RequestParam String type,
+                                 @RequestParam(required = false) String answer1,
+                                 @RequestParam(required = false) String answer2,
+                                 @RequestParam(required = false) String answer3,
+                                 @RequestParam(required = false) String answer4,
+                                 @RequestParam(required = false) Integer correctIndex,
+                                 @RequestParam(required = false) String correctAnswer,
+                                 @RequestParam(required = false) List<String> leftItems,
+                                 @RequestParam(required = false) List<String> rightItems) {
 
         Question question = questionService.findById(id);
+
         question.setText(text);
+        question.setType(QuestionType.valueOf(type));
+        question.setCorrectAnswer(null);
 
-        if (question.getAnswers().size() >= 4) {
-            question.getAnswers().get(0).setText(answer1);
-            question.getAnswers().get(0).setCorrect(correctIndex == 0);
+        question.getAnswers().clear();
+        question.getPairs().clear();
 
-            question.getAnswers().get(1).setText(answer2);
-            question.getAnswers().get(1).setCorrect(correctIndex == 1);
+        if (question.getType() == QuestionType.TEST) {
+            addAnswerIfNotBlank(question, answer1, correctIndex, 0);
+            addAnswerIfNotBlank(question, answer2, correctIndex, 1);
+            addAnswerIfNotBlank(question, answer3, correctIndex, 2);
+            addAnswerIfNotBlank(question, answer4, correctIndex, 3);
+        }
 
-            question.getAnswers().get(2).setText(answer3);
-            question.getAnswers().get(2).setCorrect(correctIndex == 2);
+        if (question.getType() == QuestionType.FILL_GAP) {
+            question.setCorrectAnswer(correctAnswer);
+        }
 
-            question.getAnswers().get(3).setText(answer4);
-            question.getAnswers().get(3).setCorrect(correctIndex == 3);
+        if (question.getType() == QuestionType.MATCHING && leftItems != null && rightItems != null) {
+            int size = Math.min(leftItems.size(), rightItems.size());
+
+            for (int i = 0; i < size; i++) {
+                String left = leftItems.get(i);
+                String right = rightItems.get(i);
+
+                if (left == null || left.isBlank() || right == null || right.isBlank()) {
+                    continue;
+                }
+
+                MatchingPair pair = new MatchingPair();
+                pair.setLeftText(left);
+                pair.setRightText(right);
+                pair.setQuestion(question);
+
+                question.getPairs().add(pair);
+            }
         }
 
         questionService.save(question);
@@ -187,6 +251,109 @@ public class AdminController {
         model.addAttribute("students", userService.findStudents(search));
         model.addAttribute("search", search == null ? "" : search);
         return "admin/students";
+    }
+    @PostMapping("/videos/{id}/delete")
+    public String deleteVideo(@PathVariable Long id) {
+        Video video = videoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Video not found"));
+
+        Long topicId = video.getTopic().getId();
+
+        videoRepository.delete(video);
+
+        return "redirect:/admin/topics/" + topicId;
+    }
+    @PostMapping("/photos/{id}/delete")
+    public String deletePhoto(@PathVariable Long id) {
+        Photo photo = photoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Photo not found"));
+
+        Long topicId = photo.getTopic().getId();
+
+        photoRepository.delete(photo);
+
+        return "redirect:/admin/topics/" + topicId;
+    }
+
+    @PostMapping("/videos")
+    public String addVideo(@RequestParam Long topicId,
+                           @RequestParam String url) {
+
+        Topic topic = topicService.findById(topicId);
+
+        Video video = new Video();
+        video.setUrl(url);
+        video.setTopic(topic);
+
+        videoRepository.save(video);
+
+        return "redirect:/admin/topics/" + topicId;
+    }
+
+    @PostMapping("/photos")
+    public String addPhoto(@RequestParam Long topicId,
+                           @RequestParam String url) {
+
+        Topic topic = topicService.findById(topicId);
+
+        Photo photo = new Photo();
+        photo.setUrl(url);
+        photo.setTopic(topic);
+
+        photoRepository.save(photo);
+
+        return "redirect:/admin/topics/" + topicId;
+    }
+
+    @PostMapping("/generate-questions")
+    @ResponseBody
+    public String generate(@RequestBody GenerateRequest request) {
+
+        Topic topic = topicService.findById(request.getTopicId());
+
+        request.setLevel(topic.getLevel().name());
+        List<CreateQuestionRequest> generated = null;
+        try {
+            generated = aiService.generateQuestions(request);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
+
+        List<Question> questions = new ArrayList<>();
+
+        for (CreateQuestionRequest dto : generated) {
+
+            Question q = new Question();
+            q.setText(dto.getQuestionText());
+            q.setType(QuestionType.valueOf(dto.getType()));
+
+            q.setTopic(topic);
+
+            if ("TEST".equals(dto.getType())) {
+                List<Answer> answers = new ArrayList<>();
+
+                for (int i = 0; i < dto.getAnswers().size(); i++) {
+                    Answer a = new Answer();
+                    a.setText(dto.getAnswers().get(i));
+                    a.setCorrect(i == dto.getCorrectIndex());
+                    a.setQuestion(q);
+                    answers.add(a);
+                }
+
+                q.setAnswers(answers);
+            }
+
+            if ("FILL_GAP".equals(dto.getType())) {
+                q.setCorrectAnswer(dto.getCorrectAnswer());
+            }
+
+            questions.add(q);
+        }
+
+        questionRepository.saveAll(questions);
+
+        return "ok";
     }
 
 }

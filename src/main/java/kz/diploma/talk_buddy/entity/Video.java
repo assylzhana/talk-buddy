@@ -5,15 +5,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "photos")
+@Table(name = "videos")
 @Getter
 @Setter
-public class Photo {
+public class Video {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(columnDefinition = "TEXT")
     private String url;
 
     @ManyToOne

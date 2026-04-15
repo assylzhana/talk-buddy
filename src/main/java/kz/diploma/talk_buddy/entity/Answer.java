@@ -17,8 +17,7 @@ public class Answer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Текст ответа обязателен")
-    @Column(nullable = false)
+    @Column(nullable = false,columnDefinition = "TEXT")
     private String text;
 
     @Column(name = "is_correct", nullable = false)

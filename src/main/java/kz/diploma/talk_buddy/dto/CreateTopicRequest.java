@@ -13,6 +13,7 @@ public class CreateTopicRequest {
     private String name;
     private String description;
     private String level;
-
+    private List<String> videoUrls;
+    private List<String> photoUrls;
     private List<CreateQuestionRequest> questions = new ArrayList<>();
 }
