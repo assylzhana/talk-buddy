@@ -49,13 +49,11 @@
 </div>
 <div class="lesson">
 
-    <!-- DESCRIPTION -->
     <div class="lesson-block">
         <h2 class="lesson-title" th:text="#{lesson.description}"></h2>
         <p class="lesson-text" th:text="${topic.description}"></p>
     </div>
 
-    <!-- VIDEOS -->
     <div class="lesson-block"
          th:if="${topic.videos != null and !topic.videos.isEmpty()}">
 
@@ -66,8 +64,12 @@
 
             <div class="slider-row" id="videoRow">
                 <div class="video-card" th:each="v : ${topic.videos}">
-                    <iframe th:src="${v.url.replace('watch?v=', 'embed/')}"
-                            frameborder="0"
+                    <iframe th:src="${
+    v.url.contains('watch?v=') ?
+    v.url.replace('watch?v=', 'embed/') :
+    v.url.replace('youtu.be/', 'www.youtube.com/embed/')
+}"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowfullscreen>
                     </iframe>
                 </div>
