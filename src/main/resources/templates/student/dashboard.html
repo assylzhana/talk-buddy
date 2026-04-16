@@ -6,163 +6,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" th:href="@{/css/student.css}">
-
     <style>
         body {
-            margin: 0;
-            font-family: system-ui;
-            background: #f3f4f6;
-        }
-
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: -260px;
-            width: 260px;
-            height: 100%;
-            background: #0f172a;
-            color: white;
-            padding: 20px;
-            transition: 0.3s;
-            z-index: 2000;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar a {
-            display: block;
-            color: #cbd5f5;
-            margin-bottom: 15px;
-            text-decoration: none;
-        }
-
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.4);
-            opacity: 0;
-            visibility: hidden;
-            transition: 0.3s;
-            z-index: 1500;
-        }
-
-        .overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            height: 60px;
-            background: white;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            z-index: 3000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-
-        .burger {
-            font-size: 28px;
-            cursor: pointer;
-            margin-right: 15px;
-        }
-
-        .content {
-            padding: 90px 20px 40px;
-            max-width: 900px;
-            margin: auto;
-        }
-
-        .card {
-            background: white;
-            padding: 20px;
-            border-radius: 16px;
-            margin-bottom: 20px;
-        }
-
-        textarea {
-            width: 100%;
-            min-height: 120px;
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            margin-top: 10px;
-            box-sizing: border-box;
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 15px;
-            background: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            margin-top: 20px;
-            cursor: pointer;
-        }
-
-        .record-controls {
-            display: flex;
-            gap: 12px;
-            margin-top: 14px;
-            margin-bottom: 14px;
-        }
-
-        .record-btn {
-            flex: 1;
-            padding: 14px;
-            background: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-
-        .record-btn.stop {
-            background: #4338ca;
-        }
-
-        .speaking-card audio {
-            width: 100%;
-            margin-top: 12px;
-        }
-
-        .section-title {
-            margin: 28px 0 12px;
+            background: url('/img/img_1.png') no-repeat center center fixed;
+            background-size: cover;
         }
     </style>
 </head>
 <body>
-
 <div class="sidebar" id="sidebar">
-    <h2 th:text="#{menu.title}">Menu</h2>
 
-    <div class="lang-switch">
-        <a th:href="@{?lang=en}">🇬🇧</a>
-        <a th:href="@{?lang=ru}">🇷🇺</a>
-        <a th:href="@{?lang=kk}">🇰🇿</a>
+    <div class="sidebar-content">
+
+        <h2 th:text="#{menu.title}">Menu</h2>
+
+        <div class="lang-switch">
+            <a th:href="@{?lang=en}">🇬🇧</a>
+            <a th:href="@{?lang=ru}">🇷🇺</a>
+            <a th:href="@{?lang=kk}">🇰🇿</a>
+        </div>
+
+        <a href="/student/dashboard" th:text="#{menu.dashboard}">Dashboard</a>
+        <a href="/student/lesson" th:text="#{menu.lesson}">Lesson</a>
+        <a href="/student/account" th:text="#{menu.account}">Account</a>
+
     </div>
 
-    <a href="/student/dashboard" th:text="#{menu.dashboard}">Dashboard</a>
-    <a href="/student/lesson" th:text="#{menu.lesson}">Lesson</a>
-    <a href="/student/account" th:text="#{menu.account}">Account</a>
+    <div class="sidebar-bottom">
 
-    <form th:action="@{/logout}" method="post">
-        <button type="submit" class="submit-btn" th:text="#{menu.logout}">Logout</button>
-    </form>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="logout-btn" th:text="#{menu.logout}">
+                Logout
+            </button>
+        </form>
+
+        <img src="/img/img.png" class="sidebar-image">
+
+    </div>
+
 </div>
 
 <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
 <div class="header">
-    <div class="burger" onclick="toggleSidebar()">☰</div>
+    <div class="burger" id="burger" onclick="toggleSidebar()">☰</div>
     <h3 th:text="#{dashboard.title}">Dashboard</h3>
 </div>
 
@@ -242,18 +129,62 @@
     </div>
 
     <div th:if="${user.level != null}">
-        <div class="card">
+        <div class="card result-card">
             <h2 th:text="#{result.level}">Your Level</h2>
-            <span th:text="${user.level}"></span>
+            <span class="level-badge" style="color: white" th:text="${user.level}"></span>
         </div>
     </div>
-
 </div>
 
 <script>
     function toggleSidebar() {
         document.getElementById("sidebar").classList.toggle("active");
         document.getElementById("overlay").classList.toggle("active");
+    }
+        let mediaRecorder;
+        let audioChunks = [];
+
+        function startRecording(btn) {
+        const card = btn.closest('.speaking-card');
+        const audio = card.querySelector('audio');
+
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = e => {
+        audioChunks.push(e.data);
+    };
+
+        mediaRecorder.onstop = () => {
+        const blob = new Blob(audioChunks, { type: 'audio/webm' });
+        const url = URL.createObjectURL(blob);
+
+        audio.src = url;
+
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+
+        reader.onloadend = () => {
+        const base64 = reader.result;
+
+        const hiddenInput = card.querySelector('input[name*="audioBase64"]');
+        hiddenInput.value = base64;
+    };
+    };
+
+        mediaRecorder.start();
+    })
+        .catch(err => {
+        alert("Microphone access denied 😢");
+        console.error(err);
+    });
+    }
+        function stopRecording(btn) {
+        if (mediaRecorder) {
+        mediaRecorder.stop();
+    }
     }
 </script>
 

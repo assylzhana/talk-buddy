@@ -6,40 +6,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" th:href="@{/css/student.css}">
+    <style>
+        body {
+            background: url('/img/img_1.png') no-repeat center center fixed;
+            background-size: cover;
+        }
+    </style>
 </head>
 <body>
 
 <div class="sidebar" id="sidebar">
-    <h2 th:text="#{menu.title}">Menu</h2>
 
-    <div class="lang-switch">
-        <a th:href="@{?lang=en}">🇬🇧</a>
-        <a th:href="@{?lang=ru}">🇷🇺</a>
-        <a th:href="@{?lang=kk}">🇰🇿</a>
+    <div class="sidebar-content">
+
+        <h2 th:text="#{menu.title}">Menu</h2>
+
+        <div class="lang-switch">
+            <a th:href="@{?lang=en}">🇬🇧</a>
+            <a th:href="@{?lang=ru}">🇷🇺</a>
+            <a th:href="@{?lang=kk}">🇰🇿</a>
+        </div>
+
+        <a href="/student/dashboard" th:text="#{menu.dashboard}">Dashboard</a>
+        <a href="/student/lesson" th:text="#{menu.lesson}">Lesson</a>
+        <a href="/student/account" th:text="#{menu.account}">Account</a>
+
     </div>
 
-    <a href="/student/dashboard" th:text="#{menu.dashboard}">Dashboard</a>
-    <a href="/student/lesson" th:text="#{menu.lesson}">Lesson</a>
-    <a href="/student/account" th:text="#{menu.account}">Account</a>
+    <div class="sidebar-bottom">
 
-    <form th:action="@{/logout}" method="post">
-        <button type="submit" class="logout-btn" th:text="#{menu.logout}">Logout</button>
-    </form>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="logout-btn" th:text="#{menu.logout}">
+                Logout
+            </button>
+        </form>
+
+        <img src="/img/img.png" class="sidebar-image">
+
+    </div>
+
 </div>
 
-<div style="position:fixed; top:0; left:0; width:100%; height:60px; background:white; display:flex; align-items:center; padding:0 20px; z-index:3000; box-shadow:0 2px 10px rgba(0,0,0,0.05);">
 
-    <div onclick="toggleSidebar()"
-         style="font-size:28px; cursor:pointer; margin-right:15px;">
-        ☰
-    </div>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
+<div class="header">
+    <div class="burger" id="burger" onclick="toggleSidebar()">☰</div>
     <h3 th:text="#{menu.lesson}">Lesson</h3>
 </div>
 
 <div class="content">
 
-    <h2 style="margin-bottom:20px;">📚 Lessons</h2>
+    <h2 class="page-title">📚 Lessons</h2>
 
     <div class="topics-grid">
 
@@ -51,22 +69,25 @@
 
             <div class="topic-info">
                 <div class="topic-title" th:text="${t.name}"></div>
-                <div class="topic-progress"
-                     th:with="p=${progressMap[t.id]}">
 
-    <span th:if="${p == null}">
-        Not passed
-    </span>
+                <div class="topic-progress" th:with="p=${progressMap[t.id]}">
 
-                    <span th:if="${p != null}">
-        <span th:text="${p.score + '/' + p.total}"></span>
-        |
-        <span th:text="${p.percent + '%'}"></span>
-        |
-        <span th:text="${p.passed ? 'PASSED' : 'FAILED'}"
-              th:style="${p.passed} ? 'color:green' : 'color:red'">
-        </span>
-    </span>
+                    <span th:if="${p == null}" class="not-passed">
+                        Not passed
+                    </span>
+
+                    <span th:if="${p != null}" class="progress-data">
+
+                        <span class="score" th:text="${p.score + '/' + p.total}"></span>
+
+                        <span class="percent" th:text="${p.percent + '%'}"></span>
+
+                        <span class="status"
+                              th:text="${p.passed ? 'PASSED' : 'FAILED'}"
+                              th:classappend="${p.passed} ? 'passed' : 'failed'">
+                        </span>
+
+                    </span>
 
                 </div>
             </div>
@@ -74,18 +95,19 @@
         </div>
 
     </div>
-    <div th:if="${showNextLevel}" class="next-level-block">
 
+    <div th:if="${showNextLevel}" class="next-level-block">
         <form th:action="@{/student/next-level}" method="post">
             <button class="next-btn" th:text="#{button.nextLevel}"></button>
         </form>
-
     </div>
 
 </div>
+
 <script>
     function toggleSidebar() {
         document.getElementById("sidebar").classList.toggle("active");
+        document.getElementById("overlay").classList.toggle("active");
     }
 </script>
 

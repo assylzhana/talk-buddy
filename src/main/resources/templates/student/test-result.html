@@ -5,260 +5,91 @@
     <title th:text="#{account.title}">Account</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/student.css}">
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7fb;
-        }
 
-        .page {
-            max-width: 900px;
-            margin: 90px auto 40px;
-            padding: 0 16px;
-        }
-
-        .result-header {
-            background: white;
-            border-radius: 18px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-            text-align: center;
-        }
-
-        .result-header h1 {
-            margin: 0 0 12px;
-            font-size: 32px;
-        }
-
-        .score-line {
-            font-size: 36px;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #111827;
-        }
-
-        .percent-line {
-            font-size: 22px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #4f46e5;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 10px 18px;
-            border-radius: 999px;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .status-pass {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .status-fail {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .result-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .result-card {
-            background: white;
-            border-radius: 18px;
-            padding: 22px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-            border-left: 6px solid transparent;
-        }
-
-        .result-card.correct {
-            border-left-color: #22c55e;
-        }
-
-        .result-card.incorrect {
-            border-left-color: #ef4444;
-        }
-
-        .question-text {
-            margin: 0 0 14px;
-            font-size: 24px;
-            line-height: 1.45;
-            color: #111827;
-            font-weight: 700;
-        }
-
-        .question-status {
-            font-size: 18px;
-            font-weight: 600;
-        }
-
-        .question-status.correct {
-            color: #16a34a;
-        }
-
-        .question-status.incorrect {
-            color: #ef4444;
-        }
-
-        .actions {
-            margin-top: 28px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .back-btn {
-            min-width: 220px;
-            padding: 14px 24px;
-            border: none;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #4f46e5, #6366f1);
-            color: white;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .back-link {
-            text-decoration: none;
-        }
-
-        @media (max-width: 768px) {
-            .page {
-                margin-top: 80px;
-            }
-
-            .result-header {
-                padding: 18px;
-            }
-
-            .result-header h1 {
-                font-size: 26px;
-            }
-
-            .score-line {
-                font-size: 30px;
-            }
-
-            .percent-line {
-                font-size: 20px;
-            }
-
-            .result-card {
-                padding: 18px;
-            }
-
-            .question-text {
-                font-size: 20px;
-            }
-
-            .question-status {
-                font-size: 16px;
-            }
-
-            .back-btn {
-                width: 100%;
-                min-width: unset;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .page {
-                padding: 0 12px;
-            }
-
-            .question-text {
-                font-size: 18px;
-            }
-
-            .score-line {
-                font-size: 28px;
-            }
-        }
-    </style>
 </head>
 <body>
-
 <div class="sidebar" id="sidebar">
-    <h2 th:text="#{menu.title}">Menu</h2>
 
-    <div class="lang-switch">
-        <a th:href="@{?lang=en}">🇬🇧</a>
-        <a th:href="@{?lang=ru}">🇷🇺</a>
-        <a th:href="@{?lang=kk}">🇰🇿</a>
+    <div class="sidebar-content">
+
+        <h2 th:text="#{menu.title}">Menu</h2>
+
+        <div class="lang-switch">
+            <a th:href="@{?lang=en}">🇬🇧</a>
+            <a th:href="@{?lang=ru}">🇷🇺</a>
+            <a th:href="@{?lang=kk}">🇰🇿</a>
+        </div>
+
+        <a href="/student/dashboard" th:text="#{menu.dashboard}">Dashboard</a>
+        <a href="/student/lesson" th:text="#{menu.lesson}">Lesson</a>
+        <a href="/student/account" th:text="#{menu.account}">Account</a>
+
     </div>
 
-    <a href="/student/dashboard" th:text="#{menu.dashboard}">Dashboard</a>
-    <a href="/student/lesson" th:text="#{menu.lesson}">Lesson</a>
-    <a href="/student/account" th:text="#{menu.account}">Account</a>
+    <div class="sidebar-bottom">
 
-    <form th:action="@{/logout}" method="post">
-        <button type="submit" class="logout-btn" th:text="#{menu.logout}">Logout</button>
-    </form>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="logout-btn" th:text="#{menu.logout}">
+                Logout
+            </button>
+        </form>
+
+        <img src="/img/img.png" class="sidebar-image">
+
+    </div>
+
 </div>
 
-<div style="position:fixed; top:0; left:0; width:100%; height:60px; background:white; display:flex; align-items:center; padding:0 20px; z-index:3000; box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
 
-    <div onclick="toggleSidebar()"
-         style="font-size:28px; cursor:pointer; margin-right:15px; z-index:4000;">
-        ☰
-    </div>
-
+<div class="header">
+    <div class="burger" id="burger" onclick="toggleSidebar()">☰</div>
     <h3>Test result</h3>
-
 </div>
-
 
 <script>
-
     function toggleSidebar() {
         document.getElementById("sidebar").classList.toggle("active");
+        document.getElementById("overlay").classList.toggle("active");
     }
 
-</script><div class="page">
+</script><div class="result-page">
 
-    <div class="result-header">
-        <h1>Result</h1>
+    <div class="result-card-main">
 
-        <div class="score-line" th:text="${correct + '/' + total}"></div>
-        <div class="percent-line" th:text="${percent + '%'}"></div>
+        <h1 class="result-title">Result</h1>
 
-        <div th:if="${passed}" class="status-badge status-pass">PASSED</div>
-        <div th:if="${!passed}" class="status-badge status-fail">FAILED</div>
+        <div class="result-score" th:text="${correct + '/' + total}"></div>
+        <div class="result-percent" th:text="${percent + '%'}"></div>
+
+        <div th:if="${passed}" class="result-status pass">PASSED 🎉</div>
+        <div th:if="${!passed}" class="result-status fail">FAILED 😢</div>
+
     </div>
 
     <div class="result-list">
+
         <div th:each="q, stat : ${topic.questions}"
-             th:class="'result-card ' + (${resultMap[q.id]} ? 'correct' : 'incorrect')">
+             th:class="'result-item ' + (${resultMap[q.id]} ? 'correct' : 'incorrect')">
 
             <div class="question-text"
-                 th:text="${stat.count + '. ' + q.text}"></div>
-
-            <div th:if="${resultMap[q.id]}" class="question-status correct">
-                ✔ Correct
+                 th:text="${stat.count + '. ' + q.text}">
             </div>
 
-            <div th:if="${!resultMap[q.id]}" class="question-status incorrect">
-                ✘ Incorrect
+            <div class="question-result"
+                 th:text="${resultMap[q.id]} ? '✔ Correct' : '✘ Incorrect'">
             </div>
+
         </div>
+
     </div>
 
-    <br><br>
-
-    <div class="actions">
-        <a href="/student/lesson" class="back-link">
-            <button class="back-btn">Back</button>
+    <div class="result-actions">
+        <a href="/student/lesson">
+            <button class="result-btn">Back to Lessons</button>
         </a>
     </div>
-</div>
 
+</div>
 </body>
 </html>
