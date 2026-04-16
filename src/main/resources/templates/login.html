@@ -13,8 +13,54 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        .cloud {
+            position: absolute;
+            width: 120px;
+            height: 60px;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.7;
         }
 
+        .cloud::before,
+        .cloud::after {
+            content: "";
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .cloud::before {
+            width: 70px;
+            height: 70px;
+            top: -30px;
+            left: 10px;
+        }
+
+        .cloud::after {
+            width: 50px;
+            height: 50px;
+            top: -20px;
+            right: 10px;
+        }
+
+        .cloud1 {
+            top: 60px;
+            left: 40px;
+        }
+
+        .cloud2 {
+            bottom: 80px;
+            right: 60px;
+        }
+
+        .cloud3 {
+            top: 150px;
+            right: 200px;
+        }
         .login-card {
             width: 100%;
             max-width: 360px;
@@ -23,21 +69,13 @@
             padding: 25px 20px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-        }
-
-        .top-icons {
-            font-size: 18px;
-            margin-bottom: 5px;
+            position: relative;
+            z-index: 1;
         }
 
         .big-ben {
             font-size: 40px;
             margin: 5px 0;
-        }
-
-        .decor {
-            font-size: 16px;
-            margin-bottom: 5px;
         }
 
         h1 {
@@ -59,6 +97,7 @@
             border-radius: 12px;
             border: 1px solid #ccc;
             font-size: 14px;
+            box-sizing: border-box;
         }
 
         button {
@@ -86,10 +125,6 @@
             color: green;
             margin-top: 10px;
         }
-        input {
-            width: 100%;
-            box-sizing: border-box;
-        }
 
         @media (max-width: 400px) {
             .login-card {
@@ -104,6 +139,11 @@
     </style>
 </head>
 <body class="login-page">
+
+<div class="cloud cloud1"></div>
+<div class="cloud cloud2"></div>
+<div class="cloud cloud3"></div>
+
 <div class="login-card">
     <div class="big-ben">🕰️</div>
 
@@ -127,5 +167,6 @@
     <p th:if="${param.logout}" class="success">You have been logged out</p>
 
 </div>
+
 </body>
 </html>
