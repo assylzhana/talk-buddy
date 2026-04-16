@@ -588,8 +588,7 @@ body {
 }
 .next-level-block {
     margin-top: 30px;
-    text-align: center;
-    padding: 0 15px;
+    text-align: start;
 }
 
 .next-btn {

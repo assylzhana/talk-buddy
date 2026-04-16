@@ -29,6 +29,7 @@ public class StudentController {
     private final UserRepository userRepository;
     private final AiAssessmentService aiService;
     private final TopicProgressRepository topicProgressRepository;
+    private final AiAssessmentService aiAssessmentService;
 
 
     @GetMapping("/dashboard")
@@ -192,6 +193,30 @@ public class StudentController {
         return "student/test";
     }
 
+    @GetMapping("/lesson/{id}/chatbot")
+    public String chatPage(@PathVariable Long id, Model model) {
+
+        model.addAttribute("topic", topicService.findById(id));
+
+        return "student/chatbot";
+    }
+
+    @PostMapping("/lesson/{id}/chatbot")
+    @ResponseBody
+    public Map<String, String> chat(@PathVariable Long id,
+                                    @RequestBody Map<String, String> req) {
+
+        Topic topic = topicService.findById(id);
+
+        String reply = aiAssessmentService.chatWithTopic(
+                topic.getName(),
+                topic.getDescription(),
+                req.get("message")
+        );
+
+        return Map.of("reply", reply);
+    }
+
     @PostMapping("/lesson/{id}/test")
     @ResponseBody
     public Map<String, Object> submitTest(@PathVariable Long id,
@@ -234,13 +259,15 @@ public class StudentController {
 
                 for (int i = 0; i < q.getPairs().size(); i++) {
 
-                    MatchingPair pair = q.getPairs().get(i);
+                    MatchingPair correctPair = q.getPairs().get(i);
 
                     String userAnswer = answers.get("q_" + q.getId() + "_pair_" + i);
 
                     if (userAnswer == null ||
-                            !userAnswer.equals(String.valueOf(pair.getId()))) {
+                            !userAnswer.equals(String.valueOf(correctPair.getId()))) {
+
                         allCorrect = false;
+                        break;
                     }
                 }
 
@@ -278,4 +305,6 @@ public class StudentController {
                 "passed", passed
         );
     }
+
+
 }

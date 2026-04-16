@@ -264,4 +264,45 @@ Return ONLY JSON:
             throw new RuntimeException("Parse error", e);
         }
     }
+
+    public String chatWithTopic(String topic, String description, String userMessage) {
+
+        String prompt = """
+You are an English teacher helping a student learn.
+
+Topic: %s
+Description: %s
+
+Rules:
+- Speak ONLY in English
+- Keep answers short and clear
+- If student makes a mistake — correct it
+- Ask 1 follow-up question
+- Stay strictly within the topic
+
+Student message:
+%s
+
+Answer:
+""".formatted(topic, description, userMessage);
+
+        try {
+            String response = aiClient.callAI(prompt);
+
+            JsonNode root = objectMapper.readTree(response);
+
+            return root
+                    .path("output")
+                    .get(0)
+                    .path("content")
+                    .get(0)
+                    .path("text")
+                    .asText()
+                    .replace("```", "")
+                    .trim();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Chat AI error", e);
+        }
+    }
 }
