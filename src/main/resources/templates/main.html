@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Talk Buddy</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f3f4f6;
+            font-family: "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #7dd3fc, #a78bfa);
             color: #111827;
         }
 
@@ -17,14 +22,19 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px 40px;
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .navbar h2 {
+            color: #4f46e5;
         }
 
         .nav-buttons a {
             margin-left: 10px;
             padding: 10px 18px;
-            border-radius: 10px;
+            border-radius: 12px;
             text-decoration: none;
             font-weight: 600;
         }
@@ -35,13 +45,14 @@
         }
 
         .btn-register {
-            background: #4f46e5;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
             color: white;
         }
 
         .hero {
-            padding: 100px 40px;
+            padding: 100px 20px;
             text-align: center;
+            color: white;
         }
 
         .hero h1 {
@@ -51,14 +62,21 @@
 
         .hero p {
             font-size: 20px;
-            color: #6b7280;
+            opacity: 0.9;
         }
 
         .section {
-            padding: 60px 40px;
-            background: white;
-            margin: 20px;
-            border-radius: 16px;
+            padding: 50px 20px;
+            margin: 20px auto;
+            max-width: 1000px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            text-align: center;
+            margin-bottom: 30px;
         }
 
         .features {
@@ -70,11 +88,17 @@
         .card {
             background: #f9fafb;
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 16px;
+            transition: 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
         .footer {
-            padding: 40px;
+            padding: 30px;
             text-align: center;
             background: #111827;
             color: white;
@@ -82,15 +106,39 @@
         }
 
         .contact {
-            margin-top: 20px;
+            text-align: center;
             line-height: 1.8;
+        }
+
+        @media (max-width: 900px) {
+            .features {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .hero {
+                padding: 60px 20px;
+            }
+
+            .navbar {
+                padding: 15px 20px;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="navbar">
-    <h2>Talk Buddy</h2>
+    <h2>Talk Buddy 🕰️</h2>
     <div class="nav-buttons">
         <a href="/login" class="btn-login">Login</a>
         <a href="/register" class="btn-register">Register</a>
@@ -98,54 +146,57 @@
 </div>
 
 <div class="hero">
-    <h1>Learn English Smarter</h1>
-    <p>Practice, test, and improve your English skills with structured topics and interactive quizzes.</p>
+    <h1>Learn English Smarter 🚀</h1>
+    <p>Practice, test, and improve your English with fun and interactive lessons.</p>
 </div>
 
 <div class="section">
-    <h2>What You Get</h2>
+    <h2>What You Get ✨</h2>
     <div class="features">
 
         <div class="card">
-            <h3>Level-based Learning</h3>
+            <h3>📚 Level-based Learning</h3>
             <p>From A1 to B2 — structured topics for every level.</p>
         </div>
 
         <div class="card">
-            <h3>Interactive Tests</h3>
+            <h3>🧠 Interactive Tests</h3>
             <p>Practice with real questions and instant feedback.</p>
         </div>
 
         <div class="card">
-            <h3>Progress Tracking</h3>
+            <h3>📈 Progress Tracking</h3>
             <p>See how you improve over time.</p>
         </div>
 
-
         <div class="card">
-            <h3>Simple UI</h3>
-            <p>Clean and intuitive interface for  students.</p>
+            <h3>🎯 Simple UI</h3>
+            <p>Clean and intuitive interface for students.</p>
         </div>
 
         <div class="card">
-            <h3>Fast & Lightweight</h3>
+            <h3>⚡ Fast & Lightweight</h3>
             <p>No unnecessary complexity — just learning.</p>
+        </div>
+
+        <div class="card">
+            <h3>🌍 Learn Anywhere</h3>
+            <p>Use it on phone, tablet, or desktop.</p>
         </div>
 
     </div>
 </div>
 
 <div class="section">
-    <h2>About Talk Buddy</h2>
+    <h2>About Talk Buddy 💡</h2>
     <p>
-        Talk Buddy is a modern platform designed to help students learn English in a structured
-        and efficient way. The system is built with a focus on simplicity and real practice.
-        Students can go through topics, answer questions, and improve their level step by step.
+        Talk Buddy helps students learn English step by step with real practice.
+        Topics, tests, and progress tracking — everything you need in one place.
     </p>
 </div>
 
 <div class="section">
-    <h2>Contact Us</h2>
+    <h2>Contact Us 📞</h2>
 
     <div class="contact">
         <p><b>Email:</b> support@talkbuddy.com</p>

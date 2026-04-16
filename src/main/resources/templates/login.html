@@ -3,13 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body.login-page {
+            margin: 0;
+            font-family: "Segoe UI", sans-serif;
+            background: linear-gradient(135deg, #7dd3fc, #a78bfa);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 360px;
+            background: white;
+            border-radius: 20px;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .top-icons {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .big-ben {
+            font-size: 40px;
+            margin: 5px 0;
+        }
+
+        .decor {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        h1 {
+            margin: 10px 0;
+            font-size: 28px;
+            color: #4338ca;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 12px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        a {
+            color: #6366f1;
+            text-decoration: none;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: green;
+            margin-top: 10px;
+        }
+        input {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        @media (max-width: 400px) {
+            .login-card {
+                max-width: 100%;
+                margin: 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
 </head>
 <body class="login-page">
 <div class="login-card">
+    <div class="big-ben">🕰️</div>
+
     <a href="/main" style="text-decoration: none; color: inherit;">
         <h1>Talk Buddy</h1>
     </a>
+
     <p>Enter to system</p>
 
     <form th:action="@{/login}" method="post">
@@ -24,6 +125,7 @@
 
     <p th:if="${param.error}" class="error">Invalid username or password</p>
     <p th:if="${param.logout}" class="success">You have been logged out</p>
+
 </div>
 </body>
 </html>
