@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TopicProgressRepository extends JpaRepository<TopicProgress, Long> {
@@ -20,4 +21,5 @@ public interface TopicProgressRepository extends JpaRepository<TopicProgress, Lo
     long countStudentsByTopic(@Param("topic") Topic topic);
     List<TopicProgress> findByTopic(Topic topic);
     TopicProgress findTopByUserAndTopicOrderByIdDesc(User user, Topic topic);
+    Optional<TopicProgress> findByUserAndTopic(User user, Topic topic);
 }

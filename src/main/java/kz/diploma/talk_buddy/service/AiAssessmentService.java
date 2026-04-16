@@ -3,7 +3,10 @@ package kz.diploma.talk_buddy.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kz.diploma.talk_buddy.dto.*;
+import kz.diploma.talk_buddy.entity.User;
+import kz.diploma.talk_buddy.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -15,7 +18,7 @@ public class AiAssessmentService {
     private final OpenAiClientService aiClient;
     private final SpeechToTextService speechService;
     private final ObjectMapper objectMapper = new ObjectMapper();
-
+    private final UserRepository userRepository;
     public AssessmentDto generateAssessment() {
 
         String prompt = """
@@ -267,24 +270,58 @@ Return ONLY JSON:
 
     public String chatWithTopic(String topic, String description, String userMessage) {
 
+        User user = userRepository.findByUsername(
+                SecurityContextHolder.getContext().getAuthentication().getName()
+        ).orElseThrow();
+
         String prompt = """
-You are an English teacher helping a student learn.
+You are a professional English teacher.
+
+Student level: %s
 
 Topic: %s
 Description: %s
 
-Rules:
+STRICT RULES:
 - Speak ONLY in English
-- Keep answers short and clear
-- If student makes a mistake — correct it
-- Ask 1 follow-up question
-- Stay strictly within the topic
+- Use ONLY level %s language
+- Do NOT use words above the level
+- Keep answers short (2–4 sentences max)
+- Always correct mistakes clearly
+- Always explain briefly
+- Always ask 1 follow-up question
+
+LEVEL RULES:
+A1:
+- very simple words
+- present simple
+- short sentences
+
+A2:
+- simple sentences
+- basic past/future
+- everyday vocabulary
+
+B1:
+- more detailed sentences
+- explain grammar
+- moderate vocabulary
+
+B2:
+- natural conversation
+- more complex grammar
+- richer vocabulary
+
+BEHAVIOR:
+- If student writes wrong → correct + show correct sentence
+- If student writes correct → praise shortly + continue
+- If message unclear → ask to rephrase
 
 Student message:
 %s
 
 Answer:
-""".formatted(topic, description, userMessage);
+""".formatted(user.getLevel(), topic, description, user.getLevel(), userMessage);
 
         try {
             String response = aiClient.callAI(prompt);

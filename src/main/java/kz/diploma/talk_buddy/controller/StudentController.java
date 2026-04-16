@@ -218,11 +218,14 @@ public class StudentController {
     }
 
     @PostMapping("/lesson/{id}/test")
-    @ResponseBody
-    public Map<String, Object> submitTest(@PathVariable Long id,
-                                          @RequestParam Map<String, String> answers) {
+    public String submitTest(@PathVariable Long id,
+                             @RequestParam Map<String, String> answers,
+                             Model model) {
 
         Topic topic = topicService.findById(id);
+
+
+        Map<Long, Boolean> resultMap = new HashMap<>();
 
         int correct = 0;
         int total = 0;
@@ -230,6 +233,7 @@ public class StudentController {
         for (Question q : topic.getQuestions()) {
 
             total++;
+            boolean isCorrect = false;
 
             if (q.getType().name().equals("TEST")) {
 
@@ -238,7 +242,7 @@ public class StudentController {
                 for (Answer a : q.getAnswers()) {
                     if (a.isCorrect() &&
                             String.valueOf(a.getId()).equals(userAnswer)) {
-                        correct++;
+                        isCorrect = true;
                     }
                 }
             }
@@ -249,7 +253,7 @@ public class StudentController {
 
                 if (userAnswer != null &&
                         userAnswer.equalsIgnoreCase(q.getCorrectAnswer())) {
-                    correct++;
+                    isCorrect = true;
                 }
             }
 
@@ -259,20 +263,22 @@ public class StudentController {
 
                 for (int i = 0; i < q.getPairs().size(); i++) {
 
-                    MatchingPair correctPair = q.getPairs().get(i);
+                    MatchingPair pair = q.getPairs().get(i);
 
                     String userAnswer = answers.get("q_" + q.getId() + "_pair_" + i);
 
                     if (userAnswer == null ||
-                            !userAnswer.equals(String.valueOf(correctPair.getId()))) {
-
+                            !userAnswer.equals(String.valueOf(pair.getId()))) {
                         allCorrect = false;
-                        break;
                     }
                 }
 
-                if (allCorrect) correct++;
+                isCorrect = allCorrect;
             }
+
+            if (isCorrect) correct++;
+
+            resultMap.put(q.getId(), isCorrect);
         }
 
         int percent = (int) ((correct * 100.0) / total);
@@ -283,28 +289,24 @@ public class StudentController {
         ).orElseThrow();
 
         TopicProgress progress = topicProgressRepository
-                .findTopByUserAndTopicOrderByIdDesc(user, topic);
+                .findByUserAndTopic(user, topic)
+                .orElse(new TopicProgress());
 
-        if (progress == null) {
-            progress = new TopicProgress();
-            progress.setUser(user);
-            progress.setTopic(topic);
-        }
-
+        progress.setUser(user);
+        progress.setTopic(topic);
         progress.setScore(correct);
         progress.setTotal(total);
         progress.setPercent(percent);
         progress.setPassed(passed);
 
         topicProgressRepository.save(progress);
+        model.addAttribute("topic", topic);
+        model.addAttribute("resultMap", resultMap);
+        model.addAttribute("correct", correct);
+        model.addAttribute("total", total);
+        model.addAttribute("percent", percent);
+        model.addAttribute("passed", passed);
 
-        return Map.of(
-                "correct", correct,
-                "total", total,
-                "percent", percent,
-                "passed", passed
-        );
+        return "student/test-result";
     }
-
-
 }

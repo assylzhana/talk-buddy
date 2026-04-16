@@ -165,7 +165,7 @@
 
 <div class="content">
 
-    <form id="testForm">
+    <form method="post">
 
         <div th:each="q, stat : ${topic.questions}" class="card">
 
@@ -228,77 +228,6 @@
     function toggleSidebar() {
         document.getElementById("sidebar").classList.toggle("active");
     }
-
-    const form = document.getElementById("testForm");
-
-    form.addEventListener("submit", async function(e) {
-        e.preventDefault();
-
-        try {
-            const formData = new FormData(form);
-
-            const response = await fetch(window.location.pathname, {
-                method: "POST",
-                body: new URLSearchParams(formData)
-            });
-
-            const text = await response.text();
-
-            console.log("STATUS:", response.status);
-            console.log("RAW RESPONSE:", text);
-
-            if (!response.ok) {
-                alert("Ошибка: " + response.status);
-                return;
-            }
-
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                console.error("JSON parse error:", e);
-                alert("Ответ не JSON");
-                return;
-            }
-
-            console.log("PARSED DATA:", data);
-
-            document.getElementById("score").innerText =
-                (data.correct ?? 0) + "/" + (data.total ?? 0);
-
-            document.getElementById("percent").innerText =
-                (data.percent ?? 0) + "%";
-
-            document.getElementById("status").innerText =
-                data.passed ? "PASSED" : "FAILED";
-
-            document.getElementById("status").style.color =
-                data.passed ? "green" : "red";
-
-            document.getElementById("resultModal").style.display = "flex";
-
-        } catch (error) {
-            console.error("FETCH ERROR:", error);
-            alert("Request failed");
-        }
-    });
-
-    function closeModal() {
-        window.location.href = "/student/lesson";
-    }
 </script>
-<div id="resultModal" class="modal">
-    <div class="modal-content">
-
-        <h2>Result</h2>
-
-        <h1 id="score"></h1>
-        <h2 id="percent"></h2>
-        <h3 id="status"></h3>
-
-        <button onclick="closeModal()" class="start-btn">OK</button>
-
-    </div>
-</div>
 </body>
 </html>

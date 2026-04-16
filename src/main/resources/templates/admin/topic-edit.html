@@ -96,6 +96,7 @@
 
         <div class="topic-edit-card">
             <h1 th:text="#{topic.edit}">Редактировать тему</h1>
+            <input type="hidden" id="topicId" th:value="${topic.id}">
 
             <form th:action="@{/admin/topics/{id}/update(id=${topic.id})}" method="post">
                 <input name="name" th:value="${topic.name}" th:placeholder="#{topic.name}">
@@ -430,18 +431,16 @@
 
         const topicName = document.querySelector('input[name="name"]').value;
         const description = document.querySelector('textarea[name="description"]').value;
-        const topicId = document.querySelector('input[name="topicId"]').value;
+        const topicId = document.getElementById('topicId').value;
+        console.log(topicName, description, topicId);
 
-        const csrfToken = document.querySelector('meta[name="_csrf"]').content;
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').content;
 
         console.log(topicName, description, topicId);
 
         fetch('/admin/generate-questions', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                [csrfHeader]: csrfToken
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 count: count,
