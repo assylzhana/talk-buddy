@@ -42,6 +42,7 @@
                 <th th:text="#{table.id}">ID</th>
                 <th th:text="#{table.name}">Название</th>
                 <th th:text="#{table.delete}">Удалить</th>
+                <th th:text="#{table.students}"></th>
             </tr>
 
             <tr th:each="t : ${topics}">
@@ -60,6 +61,11 @@
                             Удалить
                         </button>
                     </form>
+                </td>
+                <td>
+                    <a th:href="@{/admin/level/{level}/students/{topicId}(level=${level}, topicId=${t.id})}"
+                       th:text="${passedCountMap[t.id]}">
+                    </a>
                 </td>
             </tr>
 

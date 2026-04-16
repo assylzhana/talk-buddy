@@ -16,7 +16,6 @@ public class AiAssessmentService {
     private final SpeechToTextService speechService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // 🔥 1. ГЕНЕРАЦИЯ
     public AssessmentDto generateAssessment() {
 
         String prompt = """
@@ -70,12 +69,10 @@ public class AiAssessmentService {
         }
     }
 
-    // 🔥 2. ОЦЕНКА (ПРАВИЛЬНАЯ)
     public AssessmentResultDto evaluate(AssessmentSubmissionDto submission) {
 
         try {
 
-            // 🔥 1. SPEAKING → TEXT
             List<String> spokenTexts = new ArrayList<>();
 
             if (submission.getSpeakingAnswers() != null) {
@@ -90,7 +87,6 @@ public class AiAssessmentService {
                 }
             }
 
-            // 🔥 2. СОБИРАЕМ ВСЕ ОТВЕТЫ
             Map<String, Object> data = new HashMap<>();
             data.put("mcq", submission.getMultipleChoiceAnswers());
             data.put("open", submission.getOpenAnswers());
@@ -98,7 +94,6 @@ public class AiAssessmentService {
 
             String answersJson = objectMapper.writeValueAsString(data);
 
-            // 🔥 3. PROMPT
             String prompt = """
             You are a professional English teacher.
 
@@ -198,7 +193,7 @@ Return ONLY JSON:
                 total,
                 req.getTopic(),
                 req.getDescription(),
-                req.getLevel(),   // 🔥 LEVEL ТУТ
+                req.getLevel(),
                 testCount,
                 fillCount
         );
@@ -225,7 +220,6 @@ Return ONLY JSON:
 
             List<CreateQuestionRequest> list = Arrays.asList(arr);
 
-            // 🔥 МАППИНГ answers → answer1..4
             for (CreateQuestionRequest q : list) {
                 if ("TEST".equals(q.getType()) && q.getAnswers() != null) {
 

@@ -64,14 +64,12 @@ public class OpenAiClientService {
 
         List<Object> input = new ArrayList<>();
 
-        // 🔥 текстовая часть
         Map<String, Object> textPart = new HashMap<>();
         textPart.put("type", "input_text");
         textPart.put("text", prompt);
 
         input.add(textPart);
 
-        // 🔥 аудио часть
         for (String audio : audioBase64List) {
 
             Map<String, Object> audioPart = new HashMap<>();
@@ -79,7 +77,7 @@ public class OpenAiClientService {
             audioPart.put("type", "input_audio");
 
             Map<String, Object> audioData = new HashMap<>();
-            audioData.put("data", audio.split(",")[1]); // base64 без prefix
+            audioData.put("data", audio.split(",")[1]);
             audioData.put("format", "webm");
 
             audioPart.put("input_audio", audioData);

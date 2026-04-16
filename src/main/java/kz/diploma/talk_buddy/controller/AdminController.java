@@ -7,6 +7,7 @@ import kz.diploma.talk_buddy.entity.*;
 import kz.diploma.talk_buddy.repository.PhotoRepository;
 import kz.diploma.talk_buddy.repository.QuestionRepository;
 import kz.diploma.talk_buddy.repository.VideoRepository;
+import kz.diploma.talk_buddy.repository.TopicProgressRepository;
 import kz.diploma.talk_buddy.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -15,7 +16,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
@@ -29,7 +32,7 @@ public class AdminController {
     private final VideoRepository videoRepository;
     private final PhotoRepository photoRepository;
     private final QuestionRepository questionRepository;
-
+    private final TopicProgressRepository topicProgressRepository;
 
     @GetMapping
     public String contentPage(Model model) {
@@ -67,9 +70,35 @@ public class AdminController {
 
     @GetMapping("/level/{level}")
     public String levelPage(@PathVariable Level level, Model model) {
+        var topics = topicService.findByLevel(level);
+
+        Map<Long, Long> passedCountMap = new HashMap<>();
+
+        for (Topic topic : topics) {
+            long count = topicProgressRepository.countStudentsByTopic(topic);
+            passedCountMap.put(topic.getId(), count);
+        }
+
         model.addAttribute("level", level);
-        model.addAttribute("topics", topicService.findByLevel(level));
+        model.addAttribute("topics", topics);
+        model.addAttribute("passedCountMap", passedCountMap);
+
         return "admin/level-topics";
+    }
+
+    @GetMapping("/level/{level}/students/{topicId}")
+    public String testStudents(@PathVariable Level level,
+                               @PathVariable Long topicId,
+                               Model model) {
+
+        Topic topic = topicService.findById(topicId);
+        List<TopicProgress> progresses = topicProgressRepository.findByTopic(topic);
+
+        model.addAttribute("level", level);
+        model.addAttribute("topic", topic);
+        model.addAttribute("progresses", progresses);
+
+        return "admin/test-student";
     }
 
     @GetMapping("/topics/create")

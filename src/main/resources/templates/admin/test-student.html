@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="#{topics.title}">Topics</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <h2 th:text="#{admin.panel}">Admin Panel</h2>
+
+        <div class="lang-switch">
+            <a th:href="@{?lang=en}">🇬🇧</a>
+            <a th:href="@{?lang=ru}">🇷🇺</a>
+            <a th:href="@{?lang=kk}">🇰🇿</a>
+        </div>
+
+        <a th:href="@{/admin/dashboard}" th:text="#{menu.dashboard}">Dashboard</a>
+        <a th:href="@{/admin}" class="active" th:text="#{menu.content}">Контент</a>
+        <a th:href="@{/admin/students}" th:text="#{menu.students}">Список студентов</a>
+
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="logout-btn" th:text="#{menu.logout}">Logout</button>
+        </form>
+    </aside>
+
+    <main class="content">
+        <h1>
+            <span th:text="#{students.topic}"></span>
+            <span th:text="${topic.name}"></span>
+        </h1>
+
+        <a th:href="@{/admin/level/{level}(level=${level})}"
+           th:text="#{button.back}"></a>
+
+        <table>
+            <tr>
+                <th th:text="#{table.id}"></th>
+                <th th:text="#{table.username}"></th>
+                <th th:text="#{table.score}"></th>
+                <th th:text="#{table.percent}"></th>
+                <th th:text="#{table.status}"></th>
+            </tr>
+
+            <tr th:each="p : ${progresses}">
+                <td th:text="${p.user.id}"></td>
+                <td th:text="${p.user.username}"></td>
+                <td th:text="${p.score + '/' + p.total}"></td>
+                <td th:text="${p.percent + '%'}"></td>
+                <td th:text="${p.passed} ? #{status.passed} : #{status.failed}"
+                    th:style="${p.passed} ? 'color:green' : 'color:red'">
+                </td>
+            </tr>
+        </table>
+    </main>
+</div>
+</body>
+</html>
