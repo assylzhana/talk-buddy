@@ -6,14 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" th:href="@{/css/student.css}">
     <style>
-        /* фон нормальный */
-        body {
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
             margin: 0;
             font-family: Arial, sans-serif;
+            overflow-x: hidden;
             background: #f3f4f6;
         }
 
-        /* отдельный слой фона */
+        /* фон */
         body::before {
             content: "";
             position: fixed;
@@ -26,11 +31,8 @@
 
         /* HEADER */
         .header {
-            position: fixed;
+            position: sticky;
             top: 0;
-            left: 0;
-            right: 0;
-
             height: 60px;
             background: white;
 
@@ -39,44 +41,33 @@
             padding: 0 15px;
 
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            z-index: 1000;
+            z-index: 100;
         }
 
-        /* 🔥 ГЛАВНОЕ — центрирование */
+        /* ОСНОВА */
         .chat-wrapper {
-            position: fixed;
-
-            top: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-
-            width: 100%;
-            max-width: 650px;
-
-            height: calc(100vh - 80px);
-
             display: flex;
             flex-direction: column;
 
-            background: white;
-            border-radius: 20px;
+            max-width: 650px;
+            margin: 0 auto;
 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-
-            overflow: hidden;
+            height: calc(100vh - 60px);
         }
 
-        /* сообщения */
+        /* ЧАТ */
         .chat-container {
             flex: 1;
             overflow-y: auto;
+
             padding: 15px;
+
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        /* сообщения */
+        /* СООБЩЕНИЯ */
         .message {
             max-width: 75%;
             padding: 10px 14px;
@@ -95,13 +86,19 @@
             background: #e5e7eb;
         }
 
-        /* input */
+        /* INPUT */
         .chat-input {
+            position: sticky;
+            bottom: 0;
+
             display: flex;
             gap: 10px;
+
             padding: 10px;
-            border-top: 1px solid #eee;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
+
             background: white;
+            border-top: 1px solid #eee;
         }
 
         .chat-input input {
@@ -123,21 +120,12 @@
         @media (max-width: 768px) {
 
             .chat-wrapper {
-                left: 0;
-                transform: none;
-
                 width: 100%;
-                max-width: 100%;
-
                 height: calc(100vh - 60px);
-                top: 60px;
-
-                border-radius: 0;
             }
 
         }
 
-        /* 📱 МАЛЕНЬКИЕ */
         @media (max-width: 480px) {
 
             .message {
@@ -146,6 +134,7 @@
             }
 
         }
+
     </style>
 </head>
 <body>
