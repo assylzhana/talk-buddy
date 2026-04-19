@@ -685,38 +685,28 @@ audio {
         padding: 12px;
     }
 }
+
 .chat-wrapper {
-    position: fixed;
-    top: 60px;
-    left: 50%;
-    transform: translateX(-50%);
+     position: relative; /* ← ВАЖНО */
+     margin: 80px auto 0;
 
-    width: 100%;
-    max-width: 700px;
+     width: 100%;
+     max-width: 700px;
 
-    height: calc(100vh - 60px);
+     height: auto; /* ← УБРАЛИ vh */
 
-    display: flex;
-    flex-direction: column;
+     display: flex;
+     flex-direction: column;
 
-    background: white;
-    border-radius: 20px;
-    overflow: hidden;
-}
-
+     background: white;
+     border-radius: 20px;
+     overflow: hidden;
+ }
 .chat-container {
     flex: 1;
-    padding: 16px;
-    overflow-y: auto;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    gap: 10px;
-
-    background: #f3f4f6;
+    min-height: 300px; /* чтобы не схлопывался */
+    max-height: 60vh; /* контроль */
 }
-
 .message {
     max-width: 70%;
     padding: 12px 14px;
@@ -767,25 +757,38 @@ audio {
 
     cursor: pointer;
 }
-
 @media (max-width: 768px) {
 
     .chat-wrapper {
-        margin: 10px 10px;
-        height: calc(100vh - 10px);
+        margin: 70px 10px 10px;
+        height: auto;
     }
 
-    .message {
-        max-width: 80%;
-        font-size: 13px;
+    .chat-container {
+        max-height: 55vh;
     }
-}
 
-@media (max-width: 480px) {
+    .chat-input {
+        position: sticky;
+        bottom: 0;
+        background: white;
+    }
+}@media (max-width: 480px) {
 
     .chat-wrapper {
         margin: 60px 5px;
-        height: calc(100vh - 10px);
+        height: auto;
+        min-height: calc(100dvh - 70px); /* ✅ правильный vh */
+    }
+
+    .chat-container {
+        max-height: none; /* чтобы не резало */
+    }
+
+    .chat-input {
+        position: sticky;
+        bottom: 0;
+        background: white;
     }
 
     .message {
