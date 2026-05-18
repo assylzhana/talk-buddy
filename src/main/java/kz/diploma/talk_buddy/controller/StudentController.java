@@ -1,5 +1,6 @@
 package kz.diploma.talk_buddy.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpSession;
 import kz.diploma.talk_buddy.dto.AssessmentDto;
 import kz.diploma.talk_buddy.dto.AssessmentResultDto;
@@ -16,7 +17,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -30,6 +33,7 @@ public class StudentController {
     private final AiAssessmentService aiService;
     private final TopicProgressRepository topicProgressRepository;
     private final AiAssessmentService aiAssessmentService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
 
     @GetMapping("/dashboard")
@@ -196,7 +200,17 @@ public class StudentController {
     @GetMapping("/lesson/{id}/chatbot")
     public String chatPage(@PathVariable Long id, Model model) {
 
-        model.addAttribute("topic", topicService.findById(id));
+        Topic topic = topicService.findById(id);
+        model.addAttribute("topic", topic);
+
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByUsername(username).orElseThrow();
+        topicProgressRepository.findByUserAndTopic(user, topic)
+                .ifPresent(p -> {
+                    model.addAttribute("progressPercent", p.getPercent());
+                    model.addAttribute("hasMistakes",
+                            p.getWrongQuestionsJson() != null && !p.getWrongQuestionsJson().equals("[]"));
+                });
 
         return "student/chatbot";
     }
@@ -207,12 +221,31 @@ public class StudentController {
                                     @RequestBody Map<String, String> req) {
 
         Topic topic = topicService.findById(id);
+        String message = req.get("message");
+        String mode = req.getOrDefault("mode", "learning");
 
-        String reply = aiAssessmentService.chatWithTopic(
-                topic.getName(),
-                topic.getDescription(),
-                req.get("message")
-        );
+        String reply;
+        if ("correction".equals(mode)) {
+            String username = SecurityContextHolder.getContext().getAuthentication().getName();
+            User chatUser = userRepository.findByUsername(username).orElseThrow();
+            String level = chatUser.getLevel() != null ? chatUser.getLevel() : "B1";
+
+            TopicProgress progress = topicProgressRepository
+                    .findByUserAndTopic(chatUser, topic)
+                    .orElse(null);
+
+            String wrongJson = (progress != null && progress.getWrongQuestionsJson() != null)
+                    ? progress.getWrongQuestionsJson() : "[]";
+            int pct = progress != null ? progress.getPercent() : 0;
+
+            reply = aiAssessmentService.reviewMistakes(wrongJson, pct, topic.getName(), level, message);
+        } else {
+            reply = aiAssessmentService.chatWithTopic(
+                    topic.getName(),
+                    topic.getDescription(),
+                    message
+            );
+        }
 
         return Map.of("reply", reply);
     }
@@ -226,6 +259,7 @@ public class StudentController {
 
 
         Map<Long, Boolean> resultMap = new HashMap<>();
+        List<Map<String, String>> wrongQuestions = new ArrayList<>();
 
         int correct = 0;
         int total = 0;
@@ -234,25 +268,30 @@ public class StudentController {
 
             total++;
             boolean isCorrect = false;
+            String studentAnswer = null;
+            String correctAnswer = null;
 
             if (q.getType().name().equals("TEST")) {
 
                 String userAnswer = answers.get("selectedAnswers[" + q.getId() + "]");
 
                 for (Answer a : q.getAnswers()) {
-                    if (a.isCorrect() &&
-                            String.valueOf(a.getId()).equals(userAnswer)) {
+                    if (a.isCorrect()) correctAnswer = a.getText();
+                    if (a.isCorrect() && String.valueOf(a.getId()).equals(userAnswer)) {
                         isCorrect = true;
+                    }
+                    if (String.valueOf(a.getId()).equals(userAnswer)) {
+                        studentAnswer = a.getText();
                     }
                 }
             }
 
             if (q.getType().name().equals("FILL_GAP")) {
 
-                String userAnswer = answers.get("fill_" + q.getId());
+                studentAnswer = answers.get("fill_" + q.getId());
+                correctAnswer = q.getCorrectAnswer();
 
-                if (userAnswer != null &&
-                        userAnswer.equalsIgnoreCase(q.getCorrectAnswer())) {
+                if (studentAnswer != null && studentAnswer.equalsIgnoreCase(correctAnswer)) {
                     isCorrect = true;
                 }
             }
@@ -260,23 +299,33 @@ public class StudentController {
             if (q.getType().name().equals("MATCHING")) {
 
                 boolean allCorrect = true;
+                StringBuilder correctPairs = new StringBuilder();
+                StringBuilder studentPairs = new StringBuilder();
 
                 for (int i = 0; i < q.getPairs().size(); i++) {
-
                     MatchingPair pair = q.getPairs().get(i);
-
                     String userAnswer = answers.get("q_" + q.getId() + "_pair_" + i);
-
-                    if (userAnswer == null ||
-                            !userAnswer.equals(String.valueOf(pair.getId()))) {
+                    if (userAnswer == null || !userAnswer.equals(String.valueOf(pair.getId()))) {
                         allCorrect = false;
                     }
+                    correctPairs.append(pair.getLeftText()).append(" → ").append(pair.getRightText()).append("; ");
                 }
 
                 isCorrect = allCorrect;
+                correctAnswer = correctPairs.toString();
+                studentAnswer = isCorrect ? "correct" : "incorrect order";
             }
 
-            if (isCorrect) correct++;
+            if (isCorrect) {
+                correct++;
+            } else {
+                Map<String, String> wrongEntry = new HashMap<>();
+                wrongEntry.put("type", q.getType().name());
+                wrongEntry.put("question", q.getText());
+                wrongEntry.put("correct", correctAnswer != null ? correctAnswer : "");
+                wrongEntry.put("student", studentAnswer != null ? studentAnswer : "(no answer)");
+                wrongQuestions.add(wrongEntry);
+            }
 
             resultMap.put(q.getId(), isCorrect);
         }
@@ -298,6 +347,10 @@ public class StudentController {
         progress.setTotal(total);
         progress.setPercent(percent);
         progress.setPassed(passed);
+
+        try {
+            progress.setWrongQuestionsJson(objectMapper.writeValueAsString(wrongQuestions));
+        } catch (Exception ignored) {}
 
         topicProgressRepository.save(progress);
         model.addAttribute("topic", topic);

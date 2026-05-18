@@ -25,4 +25,7 @@ public class TopicProgress {
     private int percent;
 
     private boolean passed;
+
+    @Column(columnDefinition = "TEXT")
+    private String wrongQuestionsJson;
 }

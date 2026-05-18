@@ -121,6 +121,18 @@
         document.getElementById("sidebar").classList.toggle("active");
         document.getElementById("overlay").classList.toggle("active");
     }
+
+    // Shuffle options inside every matching select (skip the first "Select" option)
+    document.querySelectorAll('.test-select').forEach(function(select) {
+        var placeholder = select.options[0]; // "Select"
+        var opts = Array.from(select.options).slice(1);
+        for (var i = opts.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var tmp = opts[i]; opts[i] = opts[j]; opts[j] = tmp;
+        }
+        while (select.options.length > 1) select.remove(1);
+        opts.forEach(function(o) { select.appendChild(o); });
+    });
 </script>
 </body>
 </html>

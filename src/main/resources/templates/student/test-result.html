@@ -85,9 +85,34 @@
     </div>
 
     <div class="result-actions">
-        <a href="/student/lesson">
-            <button class="result-btn">Back to Lessons</button>
-        </a>
+
+        <div th:if="${!passed}" style="display:flex; flex-direction:column; gap:12px; width:100%;">
+            <a th:href="@{'/student/lesson/' + ${topic.id} + '/chatbot?mode=correction'}">
+                <button class="result-btn" style="background:#f59e0b; color:white; width:100%; font-size:15px; padding:14px;">
+                    Work on Errors — Chatbot
+                </button>
+            </a>
+            <a th:href="@{'/student/lesson/' + ${topic.id} + '/test'}">
+                <button class="result-btn" style="background:#6366f1; color:white; width:100%; font-size:15px; padding:14px;">
+                    Retake Test
+                </button>
+            </a>
+            <a href="/student/lesson">
+                <button class="result-btn" style="width:100%;">Back to Lessons</button>
+            </a>
+        </div>
+
+        <div th:if="${passed}" style="display:flex; flex-direction:column; gap:12px; width:100%;">
+            <a th:href="@{'/student/lesson/' + ${topic.id} + '/chatbot'}">
+                <button class="result-btn" style="background:#6366f1; color:white; width:100%; font-size:15px; padding:14px;">
+                    Open Chatbot
+                </button>
+            </a>
+            <a href="/student/lesson">
+                <button class="result-btn" style="width:100%;">Back to Lessons</button>
+            </a>
+        </div>
+
     </div>
 
 </div>
